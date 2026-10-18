@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FamilyTree - ডিজিটাল বংশলতিকা স্টুডিও</title>
+  <title>FamilyTree - বংশতালিকা</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +36,7 @@
 
   <style>
     /* Custom Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 99px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.8); }
@@ -51,9 +51,24 @@
     .canvas-panning { cursor: grabbing !important; }
     .canvas-grab { cursor: grab; }
 
-    /* --- PREVIEW THEMES --- */
+    /* --- THEMES --- */
 
-    /* ১. অভিজাত রাজকীয় (Royal Elegance) */
+    /* ১. ক্লাসিক লাইট (Classic Light - Simple & Clean) */
+    .theme-light {
+      --bg-color: #f8fafc;
+      --bg-pattern: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      --card-bg: #ffffff;
+      --card-border: #94a3b8;
+      --card-text: #0f172a;
+      --accent: #2563eb;
+      --accent-badge: #2563eb;
+      --badge-text: #ffffff;
+      --line-color: #64748b;
+      --title-font: 'Hind Siliguri', sans-serif;
+      --title-color: #0f172a;
+    }
+
+    /* ২. অভিজাত রাজকীয় (Royal Elegance) */
     .theme-royal {
       --bg-color: #03140e;
       --bg-pattern: radial-gradient(#0e3828 1.5px, transparent 1.5px);
@@ -68,7 +83,7 @@
       --title-color: #fef08a;
     }
 
-    /* ২. প্রাকৃতিক সবুজ (Botanical Emerald) */
+    /* ৩. প্রাকৃতিক সবুজ (Botanical Emerald) */
     .theme-botanical {
       --bg-color: #f3ece1;
       --bg-pattern: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
@@ -81,21 +96,6 @@
       --line-color: #2d5a27;
       --title-font: 'Noto Serif Bengali', serif;
       --title-color: #1c2d1b;
-    }
-
-    /* ৩. সানসেট গোল্ড (Sunset Gold) */
-    .theme-sunset {
-      --bg-color: #0f172a;
-      --bg-pattern: radial-gradient(#334155 1.5px, transparent 1.5px);
-      --card-bg: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-      --card-border: #f43f5e;
-      --card-text: #f8fafc;
-      --accent: #fb7185;
-      --accent-badge: linear-gradient(90deg, #f43f5e, #e11d48);
-      --badge-text: #ffffff;
-      --line-color: #f43f5e;
-      --title-font: 'Hind Siliguri', sans-serif;
-      --title-color: #fecdd3;
     }
 
     /* ৪. ডার্ক প্রিমিয়াম (Cyber Dark) */
@@ -125,7 +125,7 @@
       background: var(--card-bg);
       border: 2px solid var(--card-border);
       color: var(--card-text);
-      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.25);
     }
 
     .tree-title {
@@ -145,6 +145,16 @@
       stroke-linecap: round;
     }
 
+    .focused-node-highlight {
+      ring: 4px solid #10b981;
+      animation: pulseHighlight 1.8s infinite;
+    }
+
+    @keyframes pulseHighlight {
+      0%, 100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.8); }
+      50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+    }
+
     /* Export Frame Aspect Ratios */
     .aspect-sq { width: 1200px; height: 1200px; }
     .aspect-port { width: 1200px; height: 1500px; }
@@ -155,39 +165,24 @@
 <body class="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden antialiased">
 
   <!-- TOP NAVIGATION HEADER -->
-  <header class="h-16 bg-slate-950/90 border-b border-slate-800/80 px-4 flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
+  <header class="h-16 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between z-30 shrink-0">
     
     <!-- Brand Logo & App Name -->
     <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-amber-300 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
         <i class="fa-solid fa-tree"></i>
       </div>
       <div>
-        <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2 font-serif">
-          FamilyTree <span class="px-2 py-0.5 text-[10px] font-sans font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">বাংলা প্রিমিয়াম</span>
+        <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2 font-serif">
+          FamilyTree <span class="text-emerald-400 text-base font-sans">(বংশতালিকা)</span>
         </h1>
-        <p class="text-xs text-slate-400">ডিজিটাল বংশলতিকা তৈরি ও এক্সপোর্ট সিস্টেম</p>
       </div>
     </div>
 
     <!-- Header Quick Actions -->
     <div class="flex items-center space-x-2">
-      <!-- Layout Orientation Toggle -->
-      <button onclick="toggleLayoutDirection()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-200 rounded-lg border border-slate-700/70 transition flex items-center gap-2">
-        <i class="fa-solid fa-sitemap text-emerald-400"></i>
-        <span id="layoutBtnText" class="hidden sm:inline">উল্লম্ব লেআউট (Vertical)</span>
-      </button>
-
-      <!-- Form Toggle -->
-      <button onclick="toggleFormPanel()" class="px-3 py-1.5 bg-emerald-950/60 hover:bg-emerald-900/80 text-xs font-bold text-emerald-300 border border-emerald-700/50 rounded-lg transition flex items-center gap-2">
-        <i class="fa-solid fa-wpforms text-emerald-400"></i>
-        <span class="hidden md:inline">তথ্য ফর্ম পূরণ করুন</span>
-      </button>
-
-      <div class="h-6 w-px bg-slate-800 mx-1"></div>
-
-      <!-- JSON Export/Import Backup -->
-      <button onclick="exportJSONData()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-200 rounded-lg border border-slate-700/70 transition flex items-center gap-1.5" title="সম্পূর্ণ ডাটা ফাইল এক্সপোর্ট করুন">
+      <!-- Quick JSON Export/Import Backup -->
+      <button onclick="exportJSONData()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-200 rounded-lg border border-slate-700/70 transition flex items-center gap-1.5" title="সম্পূর্ণ ডাটা ফাইল ডাউনলোড করুন">
         <i class="fa-solid fa-download text-sky-400"></i> <span class="hidden md:inline">ডাটা সেভ (.JSON)</span>
       </button>
       
@@ -197,15 +192,15 @@
       </label>
 
       <!-- Reset Tree Data -->
-      <button onclick="confirmResetData()" class="p-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-rose-400 rounded-lg border border-slate-700/70 transition" title="রিসেট ডাটা">
+      <button onclick="confirmResetData()" class="p-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-rose-400 rounded-lg border border-slate-700/70 transition" title="রিসেট ডেমো ডাটা">
         <i class="fa-solid fa-rotate-left"></i>
       </button>
 
       <div class="h-6 w-px bg-slate-800 mx-1"></div>
 
       <!-- Export Studio Modal Launcher -->
-      <button onclick="openExportModal()" class="px-4 py-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:brightness-110 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center gap-2">
-        <i class="fa-solid fa-file-export text-sm"></i> এক্সপোর্ট স্টুডিও
+      <button onclick="openExportModal()" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center gap-2">
+        <i class="fa-solid fa-file-export text-sm"></i> এক্সপোর্ট ও প্রিন্ট
       </button>
     </div>
 
@@ -214,197 +209,218 @@
   <!-- MAIN STUDIO WORKSPACE -->
   <div class="flex-1 flex relative overflow-hidden">
 
-    <!-- LEFT SIDEBAR: STYLING & SETTINGS PANEL -->
-    <aside class="w-72 bg-slate-950/95 border-r border-slate-800/80 flex flex-col shrink-0 z-20 overflow-y-auto">
-      <div class="p-4 space-y-6">
-        
-        <!-- Title & Banner Heading Edit -->
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-            <i class="fa-solid fa-heading text-emerald-400 mr-1"></i> বংশলতিকার প্রধান শিরোনাম
-          </label>
-          <input type="text" id="familyTitleInput" value="চৌধুরী পরিবারের বংশলতিকা" oninput="updateBannerTitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-bold focus:outline-none focus:border-emerald-500">
-          <input type="text" id="familySubTitleInput" value="প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 mt-2 focus:outline-none focus:border-emerald-500">
+    <!-- LEFT SIDEBAR: TABBED WORKSPACE -->
+    <aside class="w-80 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 z-20">
+      
+      <!-- TAB NAVIGATION -->
+      <div class="flex border-b border-slate-800 bg-slate-900/60 p-1">
+        <button onclick="switchSidebarTab('members')" id="tabBtn-members" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-emerald-400 bg-slate-800 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-users text-emerald-400"></i> সদস্য তালিকা
+        </button>
+        <button onclick="switchSidebarTab('form')" id="tabBtn-form" class="flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-user-plus"></i> তথ্য ফর্ম
+        </button>
+        <button onclick="switchSidebarTab('design')" id="tabBtn-design" class="flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-sliders"></i> ডিজাইন
+        </button>
+      </div>
+
+      <!-- TAB 1: MEMBER LIST (সদস্য তালিকা) -->
+      <div id="tabContent-members" class="flex-1 flex flex-col overflow-hidden p-3 space-y-3">
+        <!-- Search & Filter -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+          <input type="text" id="memberSearchInput" oninput="renderMemberList()" placeholder="সদস্যের নাম খুঁজুন..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
         </div>
 
-        <!-- Theme Selection Cards -->
+        <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-semibold">
+          <span>মোট সদস্য সংখ্যা:</span>
+          <span id="memberCountBadge" class="font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-md">০ জন</span>
+        </div>
+
+        <!-- Scrollable Member Cards -->
+        <div id="sidebarMemberList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+
+        <button onclick="prepareNewMemberForm()" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus"></i> নতুন সদস্য যোগ করুন
+        </button>
+      </div>
+
+      <!-- TAB 2: FORM FILL-UP (নতুন সদস্য / সম্পাদনা) -->
+      <div id="tabContent-form" class="hidden flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h3 id="formHeadingTitle" class="font-bold text-xs text-emerald-400 uppercase tracking-wider">নতুন সদস্য যোগ করুন</h3>
+          <button onclick="clearFormFill()" class="text-[11px] text-slate-400 hover:text-white underline">নতুন ফর্ম</button>
+        </div>
+
+        <form id="treeMemberForm" onsubmit="handleFormFillSubmit(event)" class="space-y-3">
+          <input type="hidden" id="formMemberId">
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">পূর্ণ নাম <span class="text-rose-400">*</span></label>
+            <input type="text" id="fName" required placeholder="যেমন: আলহাজ্ব রফিকুল ইসলাম চৌধুরী" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">পদবী / পরিচয় উপাধি</label>
+            <input type="text" id="fBadge" placeholder="যেমন: মূল পুরুষ / জ্যেষ্ঠ পিতা / প্রপিতামহ" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">লিঙ্গ</label>
+              <select id="fGender" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                <option value="male">পুরুষ</option>
+                <option value="female">নারী</option>
+                <option value="other">অন্যান্য</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">জন্ম বছর</label>
+              <input type="text" id="fBirth" placeholder="১৯৪৫" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">মৃত্যু বছর (যদি প্রযোজ্য হয়)</label>
+            <input type="text" id="fDeath" placeholder="২০২১ (বা জীবিত থাকলে খালি রাখুন)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">ছবি (Image URL / আপলোড)</label>
+            <input type="url" id="fPhotoUrl" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 mb-1.5 focus:outline-none focus:border-emerald-500">
+            <input type="file" id="fPhotoFile" accept="image/*" onchange="handleFileUpload(event, 'fPhotoUrl')" class="text-[10px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">সংক্ষিপ্ত বিবরন</label>
+            <textarea id="fBio" rows="2" placeholder="সংক্ষিপ্ত বিবরণ বা পেশা..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+
+          <!-- Relationships -->
+          <div class="pt-2 border-t border-slate-800 space-y-2">
+            <p class="text-[11px] font-bold text-emerald-400 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> সম্পর্ক নির্ধারণ</p>
+
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">পিতা (Father):</label>
+              <select id="fFatherId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                <option value="">-- পিতা নির্বাচন করুন --</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">স্বামী/স্ত্রী (Spouse):</label>
+              <select id="fSpouseId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                <option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center gap-2">
+            <button type="submit" class="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow transition">
+              <i class="fa-solid fa-floppy-disk mr-1"></i> তথ্য সংরক্ষণ
+            </button>
+            <button type="button" onclick="clearFormFill()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl">
+              ক্লিয়ার
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 3: DESIGN & LAYOUT (লেআউট ও ডিজাইন) -->
+      <div id="tabContent-design" class="hidden flex-1 overflow-y-auto p-4 space-y-5">
+        
+        <!-- Title & Subtitle Settings -->
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-            <i class="fa-solid fa-palette text-amber-400 mr-1"></i> থিম ও কালার স্কিম
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">
+            <i class="fa-solid fa-heading text-emerald-400 mr-1"></i> বংশতালিকার শিরোনাম
           </label>
-          <div class="grid grid-cols-2 gap-2.5">
-            
-            <button onclick="setTheme('royal')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-xl text-left transition flex flex-col gap-1">
-              <div class="flex items-center gap-1.5">
-                <span class="w-3.5 h-3.5 rounded-full bg-emerald-700 border border-amber-400"></span>
-                <span class="w-3.5 h-3.5 rounded-full bg-amber-400"></span>
-              </div>
-              <span class="text-xs font-bold text-slate-200 group-hover:text-amber-400">অভিজাত রাজকীয়</span>
-            </button>
+          <input type="text" id="familyTitleInput" value="চৌধুরী পরিবারের বংশতালিকা" oninput="updateBannerTitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 font-bold focus:outline-none focus:border-emerald-500 mb-2">
+          <input type="text" id="familySubTitleInput" value="প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 focus:outline-none focus:border-emerald-500">
+        </div>
 
-            <button onclick="setTheme('botanical')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1">
-              <div class="flex items-center gap-1.5">
-                <span class="w-3.5 h-3.5 rounded-full bg-stone-200 border border-emerald-800"></span>
-                <span class="w-3.5 h-3.5 rounded-full bg-emerald-800"></span>
-              </div>
-              <span class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">প্রাকৃতিক সবুজ</span>
+        <!-- Tree Layout Direction (SAFE TO SWITCH) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">
+            <i class="fa-solid fa-diagram-project text-sky-400 mr-1"></i> লেআউট ওরিয়েন্টেশন
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="setLayoutDirection('vertical')" id="layoutBtn-vertical" class="p-2.5 bg-slate-900 border border-emerald-500/80 rounded-xl text-center text-xs font-bold text-emerald-300 transition">
+              <i class="fa-solid fa-arrows-up-down block text-base mb-1"></i> উল্লম্ব (Vertical)
             </button>
-
-            <button onclick="setTheme('sunset')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1">
-              <div class="flex items-center gap-1.5">
-                <span class="w-3.5 h-3.5 rounded-full bg-rose-500"></span>
-                <span class="w-3.5 h-3.5 rounded-full bg-purple-500"></span>
-              </div>
-              <span class="text-xs font-bold text-slate-200 group-hover:text-rose-400">সানসেট গোল্ড</span>
+            <button onclick="setLayoutDirection('horizontal')" id="layoutBtn-horizontal" class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition">
+              <i class="fa-solid fa-arrows-left-right block text-base mb-1"></i> অনুভূমিক (Horizontal)
             </button>
-
-            <button onclick="setTheme('cyber')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1">
-              <div class="flex items-center gap-1.5">
-                <span class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-sky-400"></span>
-                <span class="w-3.5 h-3.5 rounded-full bg-sky-400"></span>
-              </div>
-              <span class="text-xs font-bold text-slate-200 group-hover:text-sky-400">ডার্ক প্রিমিয়াম</span>
-            </button>
-
           </div>
         </div>
 
-        <!-- Frame Shape Settings -->
+        <!-- Node Spacing Slider -->
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-            <i class="fa-solid fa-circle-user text-sky-400 mr-1"></i> ছবির ফ্রেম স্টাইল
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2 flex justify-between">
+            <span><i class="fa-solid fa-arrows-left-right-to-line text-amber-400 mr-1"></i> কার্ডের মধ্যকার দূরত্ব</span>
+            <span id="spacingValueBadge" class="text-emerald-400 font-mono">মাঝারি</span>
           </label>
-          <select id="avatarFrameSelect" onchange="updateAvatarStyle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-bold focus:outline-none focus:border-emerald-500">
+          <input type="range" id="nodeGapSlider" min="20" max="100" step="10" value="48" oninput="updateNodeSpacing(this.value)" class="w-full accent-emerald-500 cursor-pointer">
+        </div>
+
+        <!-- Themes -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">
+            <i class="fa-solid fa-palette text-rose-400 mr-1"></i> কালার থিম
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="setTheme('light')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-white border border-slate-400"></span>
+              <span class="text-xs font-bold text-slate-200">ক্লাসিক লাইট</span>
+            </button>
+
+            <button onclick="setTheme('royal')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-700 border border-amber-400"></span>
+              <span class="text-xs font-bold text-slate-200">অভিজাত রাজকীয়</span>
+            </button>
+
+            <button onclick="setTheme('botanical')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-900"></span>
+              <span class="text-xs font-bold text-slate-200">প্রাকৃতিক সবুজ</span>
+            </button>
+
+            <button onclick="setTheme('cyber')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-sky-400"></span>
+              <span class="text-xs font-bold text-slate-200">ডার্ক প্রিমিয়াম</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Frame Style -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">
+            <i class="fa-solid fa-circle-user text-purple-400 mr-1"></i> ফ্রেমের আকৃতি
+          </label>
+          <select id="avatarFrameSelect" onchange="updateAvatarStyle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-bold focus:outline-none focus:border-emerald-500">
             <option value="rounded-full">বৃত্তাকার ফ্রেম (Circle)</option>
             <option value="rounded-2xl">স্মুথ স্কয়ার (Rounded)</option>
             <option value="rounded-none">ক্লাসিক স্কয়ার (Square)</option>
           </select>
         </div>
 
-        <!-- Quick Info Box -->
-        <div class="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 text-xs space-y-2">
-          <div class="flex justify-between text-slate-400">
-            <span>মোট সদস্য সংখ্যা:</span>
-            <span id="memberCountBadge" class="font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-md">০</span>
-          </div>
-          <p class="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-2">
-            <i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i>
-            <strong>ম্যাক নেভিগেশন টিপস:</strong> দুই আঙুলে যেকোনো দিকে ড্র্যাগ করে প্যান করুন এবং মাউস কার্সারের ওপর পিঞ্চ (Pinch) করে জুম ইন/আউট করুন।
-          </p>
-        </div>
-
       </div>
+
     </aside>
 
-    <!-- FORM FILL UP OVERLAY PANEL (ফর্ম পূরণ প্যানেল) -->
-    <div id="formPanel" class="w-96 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 z-20 shadow-2xl transition-all duration-300 overflow-y-auto">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
-        <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-          <i class="fa-solid fa-user-plus text-emerald-400"></i> নতুন সদস্য যোগ বা সম্পাদন
-        </h3>
-        <button onclick="toggleFormPanel()" class="text-slate-400 hover:text-white p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <form id="treeMemberForm" onsubmit="handleFormFillSubmit(event)" class="p-5 space-y-4">
-        <input type="hidden" id="formMemberId">
-
-        <!-- Full Name -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">পূর্ণ নাম <span class="text-rose-400">*</span></label>
-          <input type="text" id="fName" required placeholder="যেমন: আলহাজ্ব রফিকুল ইসলাম চৌধুরী" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-        </div>
-
-        <!-- Relationship / Badge Title -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">পদবী / পরিচয় উপাধি</label>
-          <input type="text" id="fBadge" placeholder="যেমন: মূল পুরুষ / জ্যেষ্ঠ পিতা / প্রপিতামহ" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-        </div>
-
-        <!-- Gender & Alive Status -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">লিঙ্গ</label>
-            <select id="fGender" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
-              <option value="male">পুরুষ</option>
-              <option value="female">নারী</option>
-              <option value="other">অন্যান্য</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">জন্ম তারিখ / বছর</label>
-            <input type="text" id="fBirth" placeholder="যেমন: ১৯৪৫" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
-          </div>
-        </div>
-
-        <!-- Death Date / Present -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">মৃত্যু তারিখ / বছর (যদি প্রযোজ্য হয়)</label>
-          <input type="text" id="fDeath" placeholder="যেমন: ২০২১ (বা জীবিত থাকলে খালি রাখুন)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
-        </div>
-
-        <!-- Image Upload or URL -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">সদস্যের ছবি (Image URL বা ফাইল আপলোড)</label>
-          <input type="url" id="fPhotoUrl" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 mb-2 focus:outline-none focus:border-emerald-500">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-400 font-bold uppercase">ডিভাইস থেকে ছবি আপলোড:</span>
-            <input type="file" id="fPhotoFile" accept="image/*" onchange="handleFileUpload(event, 'fPhotoUrl')" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700">
-          </div>
-        </div>
-
-        <!-- Short Bio -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">সংক্ষিপ্ত পরিচিতি / বিবরন</label>
-          <textarea id="fBio" rows="2" placeholder="যেমন: বিশিষ্ট সমাজসেবক ও শিল্পোদ্যোক্তা" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
-        </div>
-
-        <!-- Dynamic Relationship Selectors -->
-        <div class="pt-3 border-t border-slate-800 space-y-3">
-          <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-diagram-successor mr-1"></i> পারিবারিক সম্পর্ক নির্ধারণ করুন</p>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">পিতা (Father):</label>
-            <select id="fFatherId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="">-- পিতা নির্বাচন করুন (যদি থাকে) --</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">স্বামী/স্ত্রী (Spouse):</label>
-            <select id="fSpouseId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Form Submit & Action Controls -->
-        <div class="pt-4 flex items-center gap-2">
-          <button type="submit" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> সদস্য তথ্য সংরক্ষণ
-          </button>
-          <button type="button" onclick="clearFormFill()" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl">
-            ক্লিয়ার
-          </button>
-        </div>
-      </form>
-    </div>
-
     <!-- CANVAS VIEWPORT & TOUCHPAD NAVIGATION -->
-    <main id="viewport" class="flex-1 relative overflow-hidden bg-slate-950 canvas-theme-container theme-royal flex items-center justify-center canvas-grab">
+    <main id="viewport" class="flex-1 relative overflow-hidden bg-slate-950 canvas-theme-container theme-light flex items-center justify-center canvas-grab">
       
       <!-- Transform Canvas Box -->
       <div id="canvasViewport" class="viewport-canvas inline-block p-16">
         
-        <!-- Target Content Container for High-DPI Capture -->
+        <!-- Target Content Container for Capture -->
         <div id="treeContainer" class="relative inline-block min-w-[750px] p-12 rounded-3xl transition-all">
           
           <!-- Banner Title Header Display -->
-          <div class="text-center mb-14">
-            <h2 id="displayBannerTitle" class="tree-title text-4xl sm:text-5xl font-black tracking-tight drop-shadow-md">চৌধুরী পরিবারের বংশলতিকা</h2>
-            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-75 mt-2 text-slate-300">প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য</p>
-            <div class="w-36 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4 opacity-70"></div>
+          <div class="text-center mb-12">
+            <h2 id="displayBannerTitle" class="tree-title text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm">চৌধুরী পরিবারের বংশতালিকা</h2>
+            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-75 mt-1.5 text-slate-400">প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য</p>
+            <div class="w-32 h-0.5 bg-slate-400/50 mx-auto mt-3"></div>
           </div>
 
           <!-- Connecting Lines SVG Overlay -->
@@ -419,28 +435,23 @@
 
     </main>
 
-    <!-- FLOATING ZOOM CONTROLS (ম্যাক ও মাউস জুম কন্ট্রোল) -->
+    <!-- FLOATING ZOOM CONTROLS -->
     <div class="absolute bottom-6 right-6 z-30 flex items-center gap-2 bg-slate-950/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-800/90 shadow-2xl">
-      <!-- Zoom Out -->
       <button onclick="zoomOut()" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition" title="জুম আউট">
         <i class="fa-solid fa-minus text-xs"></i>
       </button>
 
-      <!-- Zoom Slider -->
-      <input type="range" id="zoomRangeSlider" min="0.1" max="3.0" step="0.05" value="1.0" oninput="handleZoomSlider(this.value)" class="w-24 accent-emerald-500 cursor-pointer">
+      <input type="range" id="zoomRangeSlider" min="0.1" max="3.0" step="0.05" value="1.0" oninput="handleZoomSlider(this.value)" class="w-20 accent-emerald-500 cursor-pointer">
 
-      <!-- Zoom In -->
       <button onclick="zoomIn()" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition" title="জুম ইন">
         <i class="fa-solid fa-plus text-xs"></i>
       </button>
 
-      <!-- Live Zoom Percentage Badge -->
-      <span id="zoomPercentBadge" class="px-2 py-1 bg-slate-900 text-emerald-400 font-mono text-xs font-bold rounded-lg border border-slate-800 min-w-[50px] text-center">১০০%</span>
+      <span id="zoomPercentBadge" class="px-2 py-1 bg-slate-900 text-emerald-400 font-mono text-xs font-bold rounded-lg border border-slate-800 min-w-[50px] text-center">১০%</span>
 
       <div class="h-5 w-px bg-slate-800 mx-0.5"></div>
 
-      <!-- Fit View -->
-      <button onclick="resetZoom()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold rounded-xl border border-slate-800 transition flex items-center gap-1.5" title="সম্পূর্ণ স্ক্রিনে ফিট করুন">
+      <button onclick="resetZoom()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold rounded-xl border border-slate-800 transition flex items-center gap-1.5">
         <i class="fa-solid fa-expand text-emerald-400"></i>
         <span>ফিট ভিউ</span>
       </button>
@@ -448,21 +459,21 @@
 
   </div>
 
-  <!-- EXPORT STUDIO MODAL (এক্সপোর্ট ও সোশ্যাল মিডিয়া) -->
+  <!-- EXPORT STUDIO MODAL -->
   <div id="exportModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-file-export text-emerald-400"></i> এক্সপোর্ট ও শেয়ার স্টুডিও
+          <i class="fa-solid fa-file-export text-emerald-400"></i> এক্সপোর্ট ও প্রিন্ট স্টুডিও
         </h3>
         <button onclick="closeExportModal()" class="text-slate-400 hover:text-white">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <!-- Social Media Preset Selector -->
+      <!-- Social Media Presets -->
       <div>
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">সোশ্যাল মিডিয়া ফরম্যাট নির্বাচন করুন</label>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">সোশ্যাল মিডিয়া সাইজ নির্বাচন করুন</label>
         <div class="grid grid-cols-2 gap-2">
           
           <button onclick="setExportFrame('sq')" id="preset-sq" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-emerald-500/60 rounded-xl text-left transition flex items-center gap-3">
@@ -500,16 +511,15 @@
         </div>
       </div>
 
-      <!-- Export Format Launch Buttons -->
+      <!-- Format Download -->
       <div class="space-y-2 pt-2 border-t border-slate-800">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ডাউনলোড ফাইল ফরম্যাট</label>
-        
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ফাইল ফরম্যাট</label>
         <div class="grid grid-cols-3 gap-3">
-          <button onclick="executeExport('png')" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
-            <i class="fa-solid fa-file-image text-lg"></i> PNG (হাই রেজোলিউশন)
+          <button onclick="executeExport('png')" class="py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
+            <i class="fa-solid fa-file-image text-lg"></i> PNG চিত্র
           </button>
           <button onclick="executeExport('jpeg')" class="py-3 bg-sky-600 hover:bg-sky-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
-            <i class="fa-solid fa-image text-lg"></i> JPG ইমেজ
+            <i class="fa-solid fa-image text-lg"></i> JPG চিত্র
           </button>
           <button onclick="executeExport('pdf')" class="py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
             <i class="fa-solid fa-file-pdf text-lg"></i> প্রিন্ট PDF
@@ -522,9 +532,12 @@
 
   <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
-    // --- STATE MANAGEMENT ---
+    // --- PERSISTENT STATE MANAGEMENT ---
+    const STORAGE_KEY = 'familyTree_data';
+    
     let familyData = [];
     let currentLayout = 'vertical';
+    let nodeGapSpacing = 48; // Default horizontal/vertical flex gap
     let selectedExportPreset = 'sq';
     let avatarStyleClass = 'rounded-full';
 
@@ -533,8 +546,8 @@
     let panX = 0, panY = 0;
     let isPanning = false, startX = 0, startY = 0;
 
-    // Standard Sample Bengali Family Data
-    const defaultBengaliData = [
+    // Initial Sample Bengali Family Data (Used ONLY if localStorage is completely empty)
+    const initialDefaultData = [
       {
         id: "1",
         name: "চৌধুরী আব্দুর রহমান",
@@ -630,35 +643,52 @@
 
     // Helper: Convert English numbers to Bengali digits
     function toBengaliNumerals(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
       return str.toString().replace(/\d/g, (x) => bnDigits[x]);
     }
 
-    // --- INITIALIZATION ---
+    // --- APPLICATION INIT ---
     window.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('familytree_bn_data');
-      if (saved) {
-        try { familyData = JSON.parse(saved); } catch(e) { familyData = defaultBengaliData; }
-      } else {
-        familyData = defaultBengaliData;
-      }
-
+      loadDataFromStorage();
       setupMacTouchpadControls();
       populateFormSelectors();
+      renderMemberList();
       renderTree();
     });
 
-    function saveState() {
-      localStorage.setItem('familytree_bn_data', JSON.stringify(familyData));
+    // 1. Storage Recovery Engine
+    function loadDataFromStorage() {
+      const savedRaw = localStorage.getItem(STORAGE_KEY);
+      if (savedRaw) {
+        try {
+          const parsed = JSON.parse(savedRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            familyData = parsed;
+          } else {
+            familyData = JSON.parse(JSON.stringify(initialDefaultData));
+          }
+        } catch(e) {
+          familyData = JSON.parse(JSON.stringify(initialDefaultData));
+        }
+      } else {
+        familyData = JSON.parse(JSON.stringify(initialDefaultData));
+        saveDataToStorage();
+      }
+    }
+
+    // 2. Storage Save Engine
+    function saveDataToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(familyData));
       populateFormSelectors();
+      renderMemberList();
       renderTree();
     }
 
     function confirmResetData() {
-      if (confirm("আপনি কি নিশ্চিত যে বর্তমান বংশলতিকা রিসেট করে ডিফল্ট নমুনায় ফিরে যেতে চান?")) {
-        familyData = JSON.parse(JSON.stringify(defaultBengaliData));
-        saveState();
+      if (confirm("আপনি কি নিশ্চিত যে সমস্ত তথ্য মুছে প্রাথমিক নমুনা বংশতালিকায় ফিরে যেতে চান?")) {
+        familyData = JSON.parse(JSON.stringify(initialDefaultData));
+        saveDataToStorage();
       }
     }
 
@@ -666,11 +696,10 @@
     function setupMacTouchpadControls() {
       const viewport = document.getElementById('viewport');
 
-      // Mac Touchpad Two-Finger Pan & Pinch-to-Zoom Event
       viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
 
-        // Mac Pinch-to-zoom (triggers wheel with e.ctrlKey = true)
+        // Mac Pinch-to-zoom (ctrlKey is true during pinch gesture)
         if (e.ctrlKey) {
           const rect = viewport.getBoundingClientRect();
           const mouseX = e.clientX - rect.left;
@@ -679,12 +708,11 @@
           const zoomFactor = Math.pow(0.992, e.deltaY);
           const newZoom = Math.min(Math.max(0.1, currentZoom * zoomFactor), 3.0);
 
-          // Pinch Focus Point Adjustment
           panX = mouseX - (mouseX - panX) * (newZoom / currentZoom);
           panY = mouseY - (mouseY - panY) * (newZoom / currentZoom);
           currentZoom = newZoom;
         } else {
-          // Mac Touchpad Two-Finger Drag Panning
+          // Two-finger Drag Panning
           panX -= e.deltaX;
           panY -= e.deltaY;
         }
@@ -692,7 +720,7 @@
         applyTransform();
       }, { passive: false });
 
-      // Mouse Drag Panning
+      // Mouse Panning
       viewport.addEventListener('mousedown', (e) => {
         if (e.target.closest('.tree-card') || e.target.closest('button') || e.target.closest('input')) return;
         isPanning = true;
@@ -718,7 +746,6 @@
       const canvas = document.getElementById('canvasViewport');
       canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
       
-      // Update Floating Controls
       document.getElementById('zoomRangeSlider').value = currentZoom;
       document.getElementById('zoomPercentBadge').innerText = toBengaliNumerals(Math.round(currentZoom * 100)) + '%';
     }
@@ -745,19 +772,103 @@
       applyTransform();
     }
 
-    // --- TREE RENDER ENGINE ---
+    // --- SIDEBAR TAB CONTROLLER ---
+    function switchSidebarTab(tabKey) {
+      ['members', 'form', 'design'].forEach(k => {
+        document.getElementById(`tabBtn-${k}`).classList.remove('text-emerald-400', 'bg-slate-800');
+        document.getElementById(`tabBtn-${k}`).classList.add('text-slate-400');
+        document.getElementById(`tabContent-${k}`).classList.add('hidden');
+      });
+
+      document.getElementById(`tabBtn-${tabKey}`).classList.add('text-emerald-400', 'bg-slate-800');
+      document.getElementById(`tabBtn-${tabKey}`).classList.remove('text-slate-400');
+      document.getElementById(`tabContent-${tabKey}`).classList.remove('hidden');
+    }
+
+    // --- SIDEBAR MEMBER LIST & FOCUS ---
+    function renderMemberList() {
+      const listContainer = document.getElementById('sidebarMemberList');
+      const searchQuery = (document.getElementById('memberSearchInput').value || '').toLowerCase();
+      
+      listContainer.innerHTML = '';
+
+      const filtered = familyData.filter(m => 
+        m.name.toLowerCase().includes(searchQuery) || 
+        (m.badge && m.badge.toLowerCase().includes(searchQuery))
+      );
+
+      document.getElementById('memberCountBadge').innerText = `${toBengaliNumerals(familyData.length)} জন`;
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">কোনো সদস্য পাওয়া যায়নি</p>`;
+        return;
+      }
+
+      filtered.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center justify-between cursor-pointer transition group';
+        
+        const avatar = m.photo
+          ? `<img src="${m.photo}" class="w-8 h-8 rounded-full object-cover border border-emerald-500/50">`
+          : `<div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs text-slate-400"><i class="fa-solid fa-user"></i></div>`;
+
+        item.onclick = () => focusMemberNode(m.id);
+
+        item.innerHTML = `
+          <div class="flex items-center space-x-2.5 overflow-hidden">
+            ${avatar}
+            <div class="overflow-hidden">
+              <h5 class="text-xs font-bold text-slate-200 truncate group-hover:text-emerald-400 transition">${m.name}</h5>
+              <p class="text-[10px] text-slate-400 truncate">${m.badge || 'পরিবার সদস্য'}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+            <button onclick="event.stopPropagation(); prepareAddChildForm('${m.id}')" class="p-1 text-emerald-400 hover:bg-emerald-950 rounded" title="সন্তান যোগ করুন"><i class="fa-solid fa-plus text-[10px]"></i></button>
+            <button onclick="event.stopPropagation(); populateFormForEdit('${m.id}')" class="p-1 text-sky-400 hover:bg-sky-950 rounded" title="সম্পাদন"><i class="fa-solid fa-pen text-[10px]"></i></button>
+            <button onclick="event.stopPropagation(); deleteMember('${m.id}')" class="p-1 text-rose-400 hover:bg-rose-950 rounded" title="মুছুন"><i class="fa-solid fa-trash text-[10px]"></i></button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function focusMemberNode(memberId) {
+      const node = document.getElementById(`node-${memberId}`);
+      if (!node) return;
+
+      // Remove existing highlights
+      document.querySelectorAll('.tree-card').forEach(c => c.classList.remove('focused-node-highlight'));
+      node.classList.add('focused-node-highlight');
+
+      const nodeRect = node.getBoundingClientRect();
+      const viewportRect = document.getElementById('viewport').getBoundingClientRect();
+
+      // Pan to center node in viewport
+      panX = (viewportRect.width / 2) - (nodeRect.left - panX + nodeRect.width / 2);
+      panY = (viewportRect.height / 2) - (nodeRect.top - panY + nodeRect.height / 2);
+      
+      applyTransform();
+
+      setTimeout(() => {
+        node.classList.remove('focused-node-highlight');
+      }, 3000);
+    }
+
+    // --- TREE RENDER ENGINE (PURE RE-RENDER) ---
+    let spouseVisitedMap = new Set();
+
     function renderTree() {
+      spouseVisitedMap.clear();
+
       const container = document.getElementById('treeBranchRoot');
       container.innerHTML = '';
 
-      document.getElementById('memberCountBadge').innerText = toBengaliNumerals(familyData.length);
-
-      if (familyData.length === 0) {
+      if (!familyData || familyData.length === 0) {
         container.innerHTML = `
           <div class="text-center py-16 text-slate-400">
             <i class="fa-solid fa-users-slash text-5xl mb-4 text-slate-600"></i>
-            <p class="text-base font-bold text-slate-300">কোনো বংশলতিকা তথ্য পাওয়া যায়নি</p>
-            <button onclick="toggleFormPanel()" class="mt-4 px-5 py-2.5 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider">
+            <p class="text-base font-bold text-slate-300">কোনো বংশতালিকা তথ্য পাওয়া যায়নি</p>
+            <button onclick="prepareNewMemberForm()" class="mt-4 px-5 py-2.5 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider">
               প্রথম সদস্য যোগ করুন
             </button>
           </div>
@@ -768,12 +879,13 @@
 
       // Root Identification Logic
       const allChildrenIds = new Set(familyData.flatMap(m => m.childrenIds || []));
-      const rootMembers = familyData.filter(m => !allChildrenIds.has(m.id) && !m.fatherId && !isSpouseVisited(m.id));
+      const rootMembers = familyData.filter(m => !allChildrenIds.has(m.id) && !m.fatherId && !spouseVisitedMap.has(m.id));
 
       const treeWrapper = document.createElement('div');
+      treeWrapper.style.gap = `${nodeGapSpacing}px`;
       treeWrapper.className = currentLayout === 'vertical' 
-        ? 'flex gap-16 justify-center items-start' 
-        : 'flex flex-col gap-16 items-start justify-center';
+        ? 'flex justify-center items-start' 
+        : 'flex flex-col items-start justify-center';
 
       let visitedSet = new Set();
       rootMembers.forEach(root => {
@@ -783,12 +895,7 @@
       container.appendChild(treeWrapper);
 
       // Draw Connection Lines
-      setTimeout(drawConnectors, 50);
-    }
-
-    let spouseVisitedMap = new Set();
-    function isSpouseVisited(id) {
-      return spouseVisitedMap.has(id);
+      setTimeout(drawConnectors, 40);
     }
 
     function buildBranch(memberId, visited) {
@@ -803,20 +910,20 @@
         ? 'flex flex-col items-center'
         : 'flex items-center';
 
-      // Couple Wrapper
+      // Couple Container
       const coupleDiv = document.createElement('div');
       coupleDiv.className = 'flex items-center gap-3 relative z-10';
 
       coupleDiv.appendChild(createMemberCard(member));
 
-      // Spouse Card Integration
+      // Spouse Card
       if (member.spouseId) {
         const spouse = familyData.find(m => m.id === member.spouseId);
         if (spouse) {
           spouseVisitedMap.add(spouse.id);
 
           const heartTag = document.createElement('div');
-          heartTag.className = 'w-7 h-7 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs shadow-md border border-amber-300';
+          heartTag.className = 'w-6 h-6 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[10px] shadow border border-amber-300';
           heartTag.innerHTML = '<i class="fa-solid fa-heart"></i>';
 
           coupleDiv.appendChild(heartTag);
@@ -829,9 +936,10 @@
       // Render Children Sub-branches
       if (member.childrenIds && member.childrenIds.length > 0) {
         const childrenContainer = document.createElement('div');
+        childrenContainer.style.gap = `${nodeGapSpacing}px`;
         childrenContainer.className = currentLayout === 'vertical'
-          ? 'flex gap-12 relative pt-12'
-          : 'flex flex-col gap-12 relative pl-12';
+          ? 'flex relative pt-12'
+          : 'flex flex-col relative pl-12';
 
         member.childrenIds.forEach(childId => {
           childrenContainer.appendChild(buildBranch(childId, visited));
@@ -846,40 +954,43 @@
     function createMemberCard(member) {
       const card = document.createElement('div');
       card.id = `node-${member.id}`;
-      card.className = `tree-card w-60 rounded-2xl p-3.5 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1`;
+      card.className = `tree-card w-56 rounded-2xl p-3 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1`;
+      
       card.onclick = (e) => {
         e.stopPropagation();
         populateFormForEdit(member.id);
       };
 
       const avatar = member.photo 
-        ? `<img src="${member.photo}" class="w-14 h-14 ${avatarStyleClass} object-cover border-2 border-emerald-400 shadow-md shrink-0" alt="${member.name}">`
-        : `<div class="w-14 h-14 ${avatarStyleClass} bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 text-xl font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
+        ? `<img src="${member.photo}" class="w-12 h-12 ${avatarStyleClass} object-cover border-2 border-emerald-400 shadow-md shrink-0" alt="${member.name}">`
+        : `<div class="w-12 h-12 ${avatarStyleClass} bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 text-lg font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
 
       const dates = (member.birth || member.death) ? `${toBengaliNumerals(member.birth || '?')} – ${toBengaliNumerals(member.death || 'জীবিত')}` : '';
 
       card.innerHTML = `
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2.5">
           ${avatar}
           <div class="overflow-hidden flex-1">
-            ${member.badge ? `<span class="tree-badge inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mb-1">${member.badge}</span>` : ''}
+            ${member.badge ? `<span class="tree-badge inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mb-0.5">${member.badge}</span>` : ''}
             <h4 class="font-bold text-xs truncate leading-tight">${member.name}</h4>
             ${dates ? `<p class="text-[10px] font-semibold opacity-80 mt-0.5">${dates}</p>` : ''}
-            ${member.bio ? `<p class="text-[10px] opacity-65 truncate italic mt-0.5">${member.bio}</p>` : ''}
           </div>
         </div>
 
-        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all flex gap-1 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1 shadow-xl z-20 text-[10px]">
-          <button onclick="event.stopPropagation(); populateFormForEdit('${member.id}')" class="font-bold text-sky-400 hover:text-sky-300">সম্পাদন</button>
+        <!-- Quick Floating Controls -->
+        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all flex gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-0.5 shadow-xl z-20 text-[10px]">
+          <button onclick="event.stopPropagation(); prepareAddChildForm('${member.id}')" class="font-bold text-emerald-400 hover:underline">+সন্তান</button>
           <span class="text-slate-700">|</span>
-          <button onclick="event.stopPropagation(); deleteMember('${member.id}')" class="font-bold text-rose-400 hover:text-rose-300">মুছুন</button>
+          <button onclick="event.stopPropagation(); populateFormForEdit('${member.id}')" class="font-bold text-sky-400 hover:underline">সম্পাদন</button>
+          <span class="text-slate-700">|</span>
+          <button onclick="event.stopPropagation(); deleteMember('${member.id}')" class="font-bold text-rose-400 hover:underline">মুছুন</button>
         </div>
       `;
 
       return card;
     }
 
-    // Dynamic Connector Engine
+    // Dynamic Line Connector Drawing Engine
     function drawConnectors() {
       const svg = document.getElementById('svgConnectors');
       svg.innerHTML = '';
@@ -929,23 +1040,50 @@
       });
     }
 
-    // --- FORM FILL-UP ENGINE ---
-    function toggleFormPanel() {
-      const formPanel = document.getElementById('formPanel');
-      formPanel.classList.toggle('hidden');
-    }
-
+    // --- FORM ACTIONS ---
     function populateFormSelectors() {
       const fatherSelect = document.getElementById('fFatherId');
       const spouseSelect = document.getElementById('fSpouseId');
 
-      fatherSelect.innerHTML = '<option value="">-- পিতা নির্বাচন করুন (যদি থাকে) --</option>';
+      fatherSelect.innerHTML = '<option value="">-- পিতা নির্বাচন করুন --</option>';
       spouseSelect.innerHTML = '<option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>';
 
       familyData.forEach(m => {
         fatherSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.badge || 'সদস্য'})</option>`;
         spouseSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.badge || 'সদস্য'})</option>`;
       });
+    }
+
+    function prepareNewMemberForm() {
+      clearFormFill();
+      switchSidebarTab('form');
+      document.getElementById('formHeadingTitle').innerText = 'নতুন সদস্য যোগ করুন';
+    }
+
+    function prepareAddChildForm(parentId) {
+      clearFormFill();
+      document.getElementById('fFatherId').value = parentId;
+      switchSidebarTab('form');
+      document.getElementById('formHeadingTitle').innerText = 'সন্তান যোগ করুন';
+    }
+
+    function populateFormForEdit(id) {
+      const member = familyData.find(m => m.id === id);
+      if (!member) return;
+
+      document.getElementById('formMemberId').value = member.id;
+      document.getElementById('fName').value = member.name || '';
+      document.getElementById('fBadge').value = member.badge || '';
+      document.getElementById('fGender').value = member.gender || 'male';
+      document.getElementById('fBirth').value = member.birth || '';
+      document.getElementById('fDeath').value = member.death || '';
+      document.getElementById('fPhotoUrl').value = member.photo || '';
+      document.getElementById('fBio').value = member.bio || '';
+      document.getElementById('fFatherId').value = member.fatherId || '';
+      document.getElementById('fSpouseId').value = member.spouseId || '';
+
+      document.getElementById('formHeadingTitle').innerText = 'তথ্য সম্পাদনা করুন';
+      switchSidebarTab('form');
     }
 
     function handleFormFillSubmit(e) {
@@ -995,27 +1133,9 @@
         if (spouse) spouse.spouseId = memberObj.id;
       }
 
-      saveState();
+      saveDataToStorage();
       clearFormFill();
-    }
-
-    function populateFormForEdit(id) {
-      const member = familyData.find(m => m.id === id);
-      if (!member) return;
-
-      document.getElementById('formMemberId').value = member.id;
-      document.getElementById('fName').value = member.name || '';
-      document.getElementById('fBadge').value = member.badge || '';
-      document.getElementById('fGender').value = member.gender || 'male';
-      document.getElementById('fBirth').value = member.birth || '';
-      document.getElementById('fDeath').value = member.death || '';
-      document.getElementById('fPhotoUrl').value = member.photo || '';
-      document.getElementById('fBio').value = member.bio || '';
-      document.getElementById('fFatherId').value = member.fatherId || '';
-      document.getElementById('fSpouseId').value = member.spouseId || '';
-
-      const formPanel = document.getElementById('formPanel');
-      if (formPanel.classList.contains('hidden')) formPanel.classList.remove('hidden');
+      switchSidebarTab('members');
     }
 
     function clearFormFill() {
@@ -1024,14 +1144,14 @@
     }
 
     function deleteMember(id) {
-      if (confirm("আপনি কি নিশ্চিত যে এই সদস্যকে বংশলতিকা থেকে মুছে ফেলতে চান?")) {
+      if (confirm("আপনি কি নিশ্চিত যে এই সদস্যকে মুছে ফেলতে চান?")) {
         familyData = familyData.filter(m => m.id !== id);
         familyData.forEach(m => {
           if (m.spouseId === id) m.spouseId = null;
           if (m.fatherId === id) m.fatherId = null;
           if (m.childrenIds) m.childrenIds = m.childrenIds.filter(cId => cId !== id);
         });
-        saveState();
+        saveDataToStorage();
       }
     }
 
@@ -1046,17 +1166,39 @@
       }
     }
 
-    // --- THEMES & CUSTOMIZATION ---
+    // --- LAYOUT & DESIGN CONTROLS (DATA IS NEVER TOUCHED HERE) ---
+    function setLayoutDirection(direction) {
+      currentLayout = direction;
+      
+      const vBtn = document.getElementById('layoutBtn-vertical');
+      const hBtn = document.getElementById('layoutBtn-horizontal');
+
+      if (direction === 'vertical') {
+        vBtn.className = 'p-2.5 bg-slate-900 border border-emerald-500/80 rounded-xl text-center text-xs font-bold text-emerald-300 transition';
+        hBtn.className = 'p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition';
+      } else {
+        hBtn.className = 'p-2.5 bg-slate-900 border border-emerald-500/80 rounded-xl text-center text-xs font-bold text-emerald-300 transition';
+        vBtn.className = 'p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition';
+      }
+
+      // Re-render ONLY (Data remains completely intact)
+      renderTree();
+    }
+
+    function updateNodeSpacing(spacingVal) {
+      nodeGapSpacing = parseInt(spacingVal, 10);
+      const badge = document.getElementById('spacingValueBadge');
+      if (nodeGapSpacing < 35) badge.innerText = 'সংকুচিত';
+      else if (nodeGapSpacing > 70) badge.innerText = 'প্রশস্ত';
+      else badge.innerText = 'মাঝারি';
+
+      renderTree();
+    }
+
     function setTheme(themeKey) {
       const viewport = document.getElementById('viewport');
       viewport.className = `flex-1 relative overflow-hidden canvas-theme-container theme-${themeKey} flex items-center justify-center canvas-grab`;
       setTimeout(drawConnectors, 30);
-    }
-
-    function toggleLayoutDirection() {
-      currentLayout = currentLayout === 'vertical' ? 'horizontal' : 'vertical';
-      document.getElementById('layoutBtnText').innerText = currentLayout === 'vertical' ? 'উল্লম্ব লেআউট (Vertical)' : 'অনুভূমিক লেআউট (Horizontal)';
-      renderTree();
     }
 
     function updateAvatarStyle(styleClass) {
@@ -1065,18 +1207,18 @@
     }
 
     function updateBannerTitle(val) {
-      document.getElementById('displayBannerTitle').innerText = val || 'বংশলতিকা';
+      document.getElementById('displayBannerTitle').innerText = val || 'বংশতালিকা';
     }
 
     function updateBannerSubtitle(val) {
       document.getElementById('displayBannerSub').innerText = val || '';
     }
 
-    // --- FULL SITE DATA EXPORT & IMPORT (JSON) ---
+    // --- FULL SITE JSON BACKUP & IMPORT ---
     function exportJSONData() {
       const exportObject = {
         appName: "FamilyTree Bengali Studio",
-        version: "2.0",
+        version: "2.1",
         exportDate: new Date().toISOString(),
         bannerTitle: document.getElementById('familyTitleInput').value,
         bannerSubtitle: document.getElementById('familySubTitleInput').value,
@@ -1086,7 +1228,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `FamilyTree_Full_Data.json`);
+      downloadAnchor.setAttribute("download", `FamilyTree_Backup.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -1110,12 +1252,12 @@
               document.getElementById('familySubTitleInput').value = parsed.bannerSubtitle;
               updateBannerSubtitle(parsed.bannerSubtitle);
             }
-            saveState();
-            alert("বংশলতিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
+            saveDataToStorage();
+            alert("বংশতালিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
           } else if (Array.isArray(parsed)) {
             familyData = parsed;
-            saveState();
-            alert("বংশলতিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
+            saveDataToStorage();
+            alert("বংশতালিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
           } else {
             alert("ত্রুটি: ফাইলের ফরম্যাট সঠিক নয়।");
           }
@@ -1150,11 +1292,9 @@
       const treeContainer = document.getElementById('treeContainer');
       const viewport = document.getElementById('viewport');
 
-      // Preserve Canvas State
       const prevTransform = document.getElementById('canvasViewport').style.transform;
       document.getElementById('canvasViewport').style.transform = 'scale(1) translate(0,0)';
 
-      // Temporary Hidden Render Frame
       const frameWrapper = document.createElement('div');
       frameWrapper.className = `canvas-theme-container ${viewport.className} flex items-center justify-center p-12 aspect-${selectedExportPreset}`;
       frameWrapper.style.position = 'fixed';
@@ -1175,7 +1315,7 @@
               format: [canvas.width, canvas.height]
             });
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save(`FamilyTree-Bengali-Print.pdf`);
+            pdf.save(`FamilyTree-Print.pdf`);
             cleanup();
           });
         } else {
