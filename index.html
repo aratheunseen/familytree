@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ancestry Studio - Premium Family Tree Creator</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Export Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            cinzel: ['"Cinzel"', 'serif'],
+            playfair: ['"Playfair Display"', 'serif'],
+            mono: ['"Space Grotesk"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.4); }
+
+    /* Pan & Zoom Workspace Canvas */
+    .viewport-canvas {
+      cursor: grab;
+      user-select: none;
+      transform-origin: 0 0;
+      transition: transform 0.08s ease-out;
+    }
+    .viewport-canvas:active { cursor: grabbing; }
+
+    /* --- THEME VARIATIONS --- */
+    
+    /* 1. Royal Gold & Emerald (Dark Luxury) */
+    .theme-royal {
+      --bg-color: #061e14;
+      --bg-pattern: radial-gradient(#103b29 1.5px, transparent 1.5px);
+      --card-bg: linear-gradient(135deg, #0d3322 0%, #082116 100%);
+      --card-border: #d4af37;
+      --card-text: #f3f4f6;
+      --accent: #fbbf24;
+      --accent-badge: #d4af37;
+      --badge-text: #000000;
+      --line-color: #d4af37;
+      --title-font: 'Cinzel', serif;
+      --title-color: #fef3c7;
+    }
+
+    /* 2. Botanical Vintage Parchment */
+    .theme-botanical {
+      --bg-color: #f4efe6;
+      --bg-pattern: radial-gradient(#d6c7b2 1.5px, transparent 1.5px);
+      --card-bg: #fffdf9;
+      --card-border: #8b7355;
+      --card-text: #2c251e;
+      --accent: #4a6b4e;
+      --accent-badge: #4a6b4e;
+      --badge-text: #ffffff;
+      --line-color: #8b7355;
+      --title-font: 'Playfair Display', serif;
+      --title-color: #2c251e;
+    }
+
+    /* 3. Sunset Glow / Modern Pastel */
+    .theme-sunset {
+      --bg-color: #0f172a;
+      --bg-pattern: radial-gradient(#334155 1.5px, transparent 1.5px);
+      --card-bg: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.9) 100%);
+      --card-border: #f43f5e;
+      --card-text: #0f172a;
+      --accent: #8b5cf6;
+      --accent-badge: linear-gradient(90deg, #f43f5e, #8b5cf6);
+      --badge-text: #ffffff;
+      --line-color: #f43f5e;
+      --title-font: 'Plus Jakarta Sans', sans-serif;
+      --title-color: #f8fafc;
+    }
+
+    /* 4. Minimalist Cyber Noir */
+    .theme-cyber {
+      --bg-color: #090d16;
+      --bg-pattern: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      --card-bg: #111827;
+      --card-border: #38bdf8;
+      --card-text: #f8fafc;
+      --accent: #38bdf8;
+      --accent-badge: #0284c7;
+      --badge-text: #ffffff;
+      --line-color: #38bdf8;
+      --title-font: 'Space Grotesk', sans-serif;
+      --title-color: #38bdf8;
+    }
+
+    /* Applied Theme Styles */
+    .canvas-theme-container {
+      background-color: var(--bg-color);
+      background-image: var(--bg-pattern);
+      background-size: 24px 24px;
+    }
+
+    .tree-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      color: var(--card-text);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+    }
+
+    .tree-title {
+      font-family: var(--title-font);
+      color: var(--title-color);
+    }
+
+    .tree-badge {
+      background: var(--accent-badge);
+      color: var(--badge-text);
+    }
+
+    .tree-line {
+      stroke: var(--line-color);
+      stroke-width: 2.5px;
+      fill: none;
+    }
+
+    /* Aspect Ratio Frames for Social Media Export */
+    .aspect-sq { width: 1080px; height: 1080px; } /* 1:1 Instagram */
+    .aspect-port { width: 1080px; height: 1350px; } /* 4:5 FB/IG Portrait */
+    .aspect-story { width: 1080px; height: 1920px; } /* 9:16 Story/Reel */
+    .aspect-land { width: 1200px; height: 675px; } /* 16:9 Twitter/Landscape */
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-slate-900 text-slate-100 font-sans overflow-hidden">
+
+  <!-- TOP TOOLBAR HEADER -->
+  <header class="h-16 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between z-30 shrink-0">
+    <!-- Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-300 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+        <i class="fa-solid fa-tree"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+          Ancestry Studio <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">Pro</span>
+        </h1>
+        <p class="text-xs text-slate-400">Social Media & High-Res Print Family Tree Generator</p>
+      </div>
+    </div>
+
+    <!-- Quick Action Controls -->
+    <div class="flex items-center space-x-2">
+      <!-- Layout Orientation Toggle -->
+      <button onclick="toggleLayoutDirection()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-2" title="Toggle Orientation">
+        <i class="fa-solid fa-sitemap text-emerald-400"></i>
+        <span id="layoutBtnText" class="hidden sm:inline">Vertical Tree</span>
+      </button>
+
+      <!-- Preset Data Toggle -->
+      <button onclick="confirmResetData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-rose-300 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">Reset</span>
+      </button>
+
+      <div class="h-6 w-px bg-slate-800 mx-1"></div>
+
+      <!-- JSON Import/Export -->
+      <button onclick="exportJSON()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5" title="Download backup data">
+        <i class="fa-solid fa-download text-sky-400"></i> <span class="hidden md:inline">Save Data</span>
+      </button>
+      <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-upload text-amber-400"></i> <span class="hidden md:inline">Load Data</span>
+        <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="importJSON(event)">
+      </label>
+
+      <div class="h-6 w-px bg-slate-800 mx-1"></div>
+
+      <!-- Primary Export Modal Trigger -->
+      <button onclick="openExportModal()" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center gap-2">
+        <i class="fa-solid fa-share-nodes text-sm"></i> Export Studio
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN STUDIO WORKSPACE -->
+  <div class="flex-1 flex relative overflow-hidden">
+
+    <!-- LEFT SIDEBAR: THEMES & DESIGN CONTROL -->
+    <aside class="w-72 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 z-20 overflow-y-auto">
+      <div class="p-4 space-y-6">
+        
+        <!-- Header Customization -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <i class="fa-solid fa-heading text-emerald-400 mr-1"></i> Family Banner Title
+          </label>
+          <input type="text" id="familyTitleInput" value="The Lineage of Pendelton" oninput="updateBannerTitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 font-semibold focus:outline-none focus:border-emerald-500">
+          <input type="text" id="familySubTitleInput" value="Generational History & Family Tree" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 mt-2 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <!-- Aesthetic Themes Palette -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+            <i class="fa-solid fa-palette text-amber-400 mr-1"></i> Visual Theme
+          </label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button onclick="setTheme('royal')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-emerald-900/60 rounded-xl text-left transition flex flex-col gap-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-600 border border-amber-400"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              </div>
+              <span class="text-xs font-semibold text-slate-200 group-hover:text-emerald-400">Royal Gold</span>
+            </button>
+
+            <button onclick="setTheme('botanical')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-stone-300 border border-stone-600"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-800"></span>
+              </div>
+              <span class="text-xs font-semibold text-slate-200 group-hover:text-amber-300">Botanical</span>
+            </button>
+
+            <button onclick="setTheme('sunset')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+              </div>
+              <span class="text-xs font-semibold text-slate-200 group-hover:text-rose-400">Sunset Glow</span>
+            </button>
+
+            <button onclick="setTheme('cyber')" class="group p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex flex-col gap-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-slate-900 border border-sky-400"></span>
+                <span class="w-3 h-3 rounded-full bg-sky-400"></span>
+              </div>
+              <span class="text-xs font-semibold text-slate-200 group-hover:text-sky-400">Cyber Noir</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Frame Shape Settings -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <i class="fa-solid fa-circle-user text-sky-400 mr-1"></i> Avatar Frame Style
+          </label>
+          <select id="avatarFrameSelect" onchange="updateAvatarStyle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 font-semibold focus:outline-none focus:border-emerald-500">
+            <option value="rounded-full">Circle</option>
+            <option value="rounded-xl">Rounded Square</option>
+            <option value="rounded-none">Classic Square</option>
+          </select>
+        </div>
+
+        <!-- Quick Member Management -->
+        <div class="pt-4 border-t border-slate-800">
+          <button onclick="openAddMemberModal()" class="w-full py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-user-plus text-sm"></i> Add Root Ancestor
+          </button>
+        </div>
+
+        <!-- Member Count Stats -->
+        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <span>Total Family Members:</span>
+          <span id="memberCountBadge" class="font-bold text-white bg-slate-800 px-2 py-0.5 rounded-md">0</span>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- FLOATING CANVAS NAVIGATION CONTROLS -->
+    <div class="absolute bottom-6 right-6 z-20 flex flex-col gap-2 bg-slate-950/90 backdrop-blur-md p-2 rounded-2xl border border-slate-800 shadow-2xl">
+      <button onclick="zoomIn()" class="w-10 h-10 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition shadow-md" title="Zoom In">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button onclick="zoomOut()" class="w-10 h-10 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition shadow-md" title="Zoom Out">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+      <button onclick="resetZoom()" class="w-10 h-10 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition shadow-md" title="Fit to View">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+
+    <!-- MAIN PANNING CANVAS AREA -->
+    <main id="viewport" class="flex-1 relative overflow-hidden bg-slate-950 canvas-theme-container theme-royal flex items-center justify-center">
+      
+      <!-- Transform Container -->
+      <div id="canvasViewport" class="viewport-canvas inline-block p-16">
+        
+        <!-- Render Container (Target for Export Capture) -->
+        <div id="treeContainer" class="relative inline-block min-w-[700px] p-12 rounded-3xl transition-all">
+          
+          <!-- Banner Header Display -->
+          <div class="text-center mb-12">
+            <h2 id="displayBannerTitle" class="tree-title text-4xl sm:text-5xl font-black tracking-tight drop-shadow-md">The Lineage of Pendelton</h2>
+            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-70 mt-2 text-slate-300">Generational History & Family Tree</p>
+            <div class="w-32 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4 opacity-60"></div>
+          </div>
+
+          <!-- Dynamic SVG Line Overlay -->
+          <svg id="svgConnectors" class="absolute inset-0 w-full h-full pointer-events-none z-0"></svg>
+
+          <!-- Tree Root Structure Container -->
+          <div id="treeBranchRoot" class="relative z-10 flex justify-center"></div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- RIGHT SIDEBAR: MEMBER PROFILE EDIT DRAWER -->
+    <aside id="memberDrawer" class="w-80 bg-slate-950 border-l border-slate-800 flex flex-col shrink-0 z-30 transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+        <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-emerald-400"></i> Member Profile
+        </h3>
+        <button onclick="closeDrawer()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-1 space-y-4" id="drawerContent">
+        <!-- Filled dynamically via JS -->
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900/50 flex gap-2">
+        <button onclick="saveMemberFromDrawer()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs tracking-wider uppercase transition shadow">
+          Save Changes
+        </button>
+        <button onclick="deleteMemberFromDrawer()" class="px-3 py-2 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/40 rounded-lg text-xs font-bold transition">
+          Delete
+        </button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MODAL 1: ADD MEMBER MODAL -->
+  <div id="memberModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2" id="modalTitle">
+          <i class="fa-solid fa-user-plus text-emerald-400"></i> Add Member
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="addMemberForm" onsubmit="handleAddMemberSubmit(event)" class="space-y-3.5">
+        <input type="hidden" id="modalTargetId">
+        <input type="hidden" id="modalRelationType">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Full Name</label>
+          <input type="text" id="mName" required placeholder="e.g. Eleanor Vance" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Relation Tag / Badge</label>
+            <input type="text" id="mBadge" placeholder="e.g. Matriarch" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Gender</label>
+            <select id="mGender" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Birth Date / Year</label>
+            <input type="text" id="mBirth" placeholder="e.g. 1942" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Death Date / Year</label>
+            <input type="text" id="mDeath" placeholder="e.g. Present" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Photo Input (URL or Local File Base64) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Member Photo</label>
+          <div class="space-y-2">
+            <input type="url" id="mPhotoUrl" placeholder="Image Web URL (https://...)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-500 uppercase font-bold">Or Upload File:</span>
+              <input type="file" id="mPhotoFile" accept="image/*" onchange="handleFileUpload(event, 'mPhotoUrl')" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Short Bio / Quote</label>
+          <input type="text" id="mBio" placeholder="e.g. Botanist & Family Historian" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg shadow">Add Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: EXPORT STUDIO MODAL -->
+  <div id="exportModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-share-nodes text-emerald-400"></i> Export & Share Studio
+        </h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Social Media Presets -->
+      <div>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Social Media Presets (Aspect Ratio)</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setExportFrame('sq')" id="preset-sq" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-emerald-500/50 rounded-xl text-left transition flex items-center gap-3">
+            <i class="fa-square-instagram text-xl text-rose-400"></i>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Square (1:1)</p>
+              <p class="text-[10px] text-slate-400">Instagram Post</p>
+            </div>
+          </button>
+          <button onclick="setExportFrame('port')" id="preset-port" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
+            <i class="fa-brands fa-facebook text-xl text-blue-400"></i>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Portrait (4:5)</p>
+              <p class="text-[10px] text-slate-400">FB / IG Feed</p>
+            </div>
+          </button>
+          <button onclick="setExportFrame('story')" id="preset-story" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
+            <i class="fa-solid fa-mobile-screen text-xl text-purple-400"></i>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Story/Reel (9:16)</p>
+              <p class="text-[10px] text-slate-400">Vertical Mobile</p>
+            </div>
+          </button>
+          <button onclick="setExportFrame('land')" id="preset-land" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
+            <i class="fa-brands fa-x-twitter text-xl text-sky-400"></i>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Landscape (16:9)</p>
+              <p class="text-[10px] text-slate-400">Twitter / Banner</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Format Buttons -->
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Output Format</label>
+        
+        <div class="grid grid-cols-3 gap-3">
+          <button onclick="executeExport('png')" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
+            <i class="fa-solid fa-file-image text-lg"></i> PNG (HD)
+          </button>
+          <button onclick="executeExport('jpeg')" class="py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
+            <i class="fa-solid fa-image text-lg"></i> JPG Photo
+          </button>
+          <button onclick="executeExport('pdf')" class="py-3 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
+            <i class="fa-solid fa-file-pdf text-lg"></i> Print PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // --- STATE MANAGEMENT ---
+    let familyData = [];
+    let currentLayout = 'vertical'; // 'vertical' or 'horizontal'
+    let activeMemberId = null;
+    let selectedExportPreset = 'sq'; // sq, port, story, land
+    let currentZoom = 1.0;
+    let panX = 0, panY = 0;
+    let isPanning = false, startX = 0, startY = 0;
+    let avatarStyleClass = 'rounded-full';
+
+    // Rich Default Sample Family Tree
+    const defaultSampleData = [
+      {
+        id: "1",
+        name: "Arthur Pendelton",
+        badge: "Patriarch",
+        gender: "male",
+        birth: "1938",
+        death: "2015",
+        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
+        bio: "Master Architect & Collector",
+        spouseId: "2",
+        childrenIds: ["3", "4"]
+      },
+      {
+        id: "2",
+        name: "Eleanor Vance",
+        badge: "Matriarch",
+        gender: "female",
+        birth: "1942",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&auto=format&fit=crop&q=80",
+        bio: "Botanist & Family Historian",
+        spouseId: "1",
+        childrenIds: ["3", "4"]
+      },
+      {
+        id: "3",
+        name: "Julian Pendelton",
+        badge: "Son",
+        gender: "male",
+        birth: "1968",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+        bio: "Software Executive",
+        spouseId: "5",
+        childrenIds: ["6", "7"]
+      },
+      {
+        id: "4",
+        name: "Clara Pendelton",
+        badge: "Daughter",
+        gender: "female",
+        birth: "1972",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+        bio: "Landscape Photographer",
+        spouseId: null,
+        childrenIds: []
+      },
+      {
+        id: "5",
+        name: "Sophia Martinez",
+        badge: "Daughter-in-Law",
+        gender: "female",
+        birth: "1970",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop&q=80",
+        bio: "Concert Pianist",
+        spouseId: "3",
+        childrenIds: ["6", "7"]
+      },
+      {
+        id: "6",
+        name: "Leo Pendelton",
+        badge: "Grandson",
+        gender: "male",
+        birth: "2001",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+        bio: "3D Artist & Gamer",
+        spouseId: null,
+        childrenIds: []
+      },
+      {
+        id: "7",
+        name: "Maya Pendelton",
+        badge: "Granddaughter",
+        gender: "female",
+        birth: "2005",
+        death: "Present",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+        bio: "Environmental Scientist",
+        spouseId: null,
+        childrenIds: []
+      }
+    ];
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('ancestry_studio_data');
+      if (saved) {
+        try { familyData = JSON.parse(saved); } catch(e) { familyData = defaultSampleData; }
+      } else {
+        familyData = defaultSampleData;
+      }
+      
+      initPanning();
+      renderTree();
+    });
+
+    function saveState() {
+      localStorage.setItem('ancestry_studio_data', JSON.stringify(familyData));
+      renderTree();
+    }
+
+    function confirmResetData() {
+      if (confirm("Reset current family tree to sample template?")) {
+        familyData = JSON.parse(JSON.stringify(defaultSampleData));
+        saveState();
+      }
+    }
+
+    // --- RENDER ENGINE ---
+    function renderTree() {
+      const container = document.getElementById('treeBranchRoot');
+      container.innerHTML = '';
+
+      document.getElementById('memberCountBadge').innerText = familyData.length;
+
+      if (familyData.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16 text-slate-400">
+            <i class="fa-solid fa-users-slash text-5xl mb-4 text-slate-600"></i>
+            <p class="text-base font-bold text-slate-300">Your family tree is empty</p>
+            <button onclick="openAddMemberModal()" class="mt-4 px-5 py-2.5 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider">
+              Add Root Member
+            </button>
+          </div>
+        `;
+        drawConnectors();
+        return;
+      }
+
+      // Identify Root Nodes (Members who are not children of anyone)
+      const allChildrenIds = new Set(familyData.flatMap(m => m.childrenIds || []));
+      const rootMembers = familyData.filter(m => !allChildrenIds.has(m.id) && !isSpouseVisited(m.id));
+
+      const treeWrapper = document.createElement('div');
+      treeWrapper.className = currentLayout === 'vertical' 
+        ? 'flex gap-16 justify-center items-start' 
+        : 'flex flex-col gap-16 items-start justify-center';
+
+      let visitedSet = new Set();
+      rootMembers.forEach(root => {
+        treeWrapper.appendChild(buildBranch(root.id, visitedSet));
+      });
+
+      container.appendChild(treeWrapper);
+
+      // Re-render SVG Connector Lines
+      setTimeout(drawConnectors, 50);
+    }
+
+    let spouseVisitedMap = new Set();
+    function isSpouseVisited(id) {
+      return spouseVisitedMap.has(id);
+    }
+
+    function buildBranch(memberId, visited) {
+      if (visited.has(memberId)) return document.createElement('div');
+      visited.add(memberId);
+
+      const member = familyData.find(m => m.id === memberId);
+      if (!member) return document.createElement('div');
+
+      const branch = document.createElement('div');
+      branch.className = currentLayout === 'vertical'
+        ? 'flex flex-col items-center'
+        : 'flex items-center';
+
+      // Couple Card Container
+      const coupleDiv = document.createElement('div');
+      coupleDiv.className = 'flex items-center gap-3 relative z-10';
+
+      // Primary Card
+      coupleDiv.appendChild(createMemberCard(member));
+
+      // Spouse Card
+      if (member.spouseId) {
+        const spouse = familyData.find(m => m.id === member.spouseId);
+        if (spouse) {
+          spouseVisitedMap.add(spouse.id);
+
+          const heartTag = document.createElement('div');
+          heartTag.className = 'w-7 h-7 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs shadow-md border border-amber-300';
+          heartTag.innerHTML = '<i class="fa-solid fa-heart"></i>';
+
+          coupleDiv.appendChild(heartTag);
+          coupleDiv.appendChild(createMemberCard(spouse));
+        }
+      }
+
+      branch.appendChild(coupleDiv);
+
+      // Children Nodes
+      if (member.childrenIds && member.childrenIds.length > 0) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = currentLayout === 'vertical'
+          ? 'flex gap-12 relative pt-12'
+          : 'flex flex-col gap-12 relative pl-12';
+
+        member.childrenIds.forEach(childId => {
+          childrenContainer.appendChild(buildBranch(childId, visited));
+        });
+
+        branch.appendChild(childrenContainer);
+      }
+
+      return branch;
+    }
+
+    function createMemberCard(member) {
+      const card = document.createElement('div');
+      card.id = `node-${member.id}`;
+      card.className = `tree-card w-56 rounded-2xl p-3.5 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1`;
+      card.onclick = (e) => {
+        e.stopPropagation();
+        openDrawer(member.id);
+      };
+
+      const avatar = member.photo 
+        ? `<img src="${member.photo}" class="w-14 h-14 ${avatarStyleClass} object-cover border-2 border-emerald-400 shadow-md shrink-0" alt="${member.name}">`
+        : `<div class="w-14 h-14 ${avatarStyleClass} bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 text-xl font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
+
+      const dates = (member.birth || member.death) ? `${member.birth || '?'} – ${member.death || 'Present'}` : '';
+
+      card.innerHTML = `
+        <div class="flex items-center space-x-3">
+          ${avatar}
+          <div class="overflow-hidden flex-1">
+            ${member.badge ? `<span class="tree-badge inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mb-1">${member.badge}</span>` : ''}
+            <h4 class="font-bold text-xs truncate leading-tight">${member.name}</h4>
+            ${dates ? `<p class="text-[10px] font-semibold opacity-75 mt-0.5">${dates}</p>` : ''}
+            ${member.bio ? `<p class="text-[10px] opacity-60 truncate italic mt-0.5">${member.bio}</p>` : ''}
+          </div>
+        </div>
+
+        <!-- Hover Quick Actions -->
+        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all flex gap-1 bg-slate-900 border border-slate-700 rounded-full px-2 py-1 shadow-xl z-20">
+          <button onclick="event.stopPropagation(); openAddMemberModal('${member.id}', 'child')" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 px-1.5">+ Child</button>
+          <span class="text-slate-700 text-[10px]">|</span>
+          <button onclick="event.stopPropagation(); openAddMemberModal('${member.id}', 'spouse')" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 px-1.5">+ Spouse</button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Dynamic SVG Connectors Engine
+    function drawConnectors() {
+      const svg = document.getElementById('svgConnectors');
+      svg.innerHTML = '';
+
+      familyData.forEach(parent => {
+        if (!parent.childrenIds || parent.childrenIds.length === 0) return;
+
+        const parentEl = document.getElementById(`node-${parent.id}`);
+        if (!parentEl) return;
+
+        const pRect = parentEl.getBoundingClientRect();
+        const containerRect = document.getElementById('treeContainer').getBoundingClientRect();
+
+        parent.childrenIds.forEach(childId => {
+          const childEl = document.getElementById(`node-${childId}`);
+          if (!childEl) return;
+
+          const cRect = childEl.getBoundingClientRect();
+
+          let x1, y1, x2, y2;
+
+          if (currentLayout === 'vertical') {
+            x1 = pRect.left + pRect.width / 2 - containerRect.left;
+            y1 = pRect.bottom - containerRect.top;
+            x2 = cRect.left + cRect.width / 2 - containerRect.left;
+            y2 = cRect.top - containerRect.top;
+          } else {
+            x1 = pRect.right - containerRect.left;
+            y1 = pRect.top + pRect.height / 2 - containerRect.top;
+            x2 = cRect.left - containerRect.left;
+            y2 = cRect.top + cRect.height / 2 - containerRect.top;
+          }
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('class', 'tree-line');
+          
+          if (currentLayout === 'vertical') {
+            const midY = y1 + (y2 - y1) / 2;
+            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+          } else {
+            const midX = x1 + (x2 - x1) / 2;
+            path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+          }
+
+          svg.appendChild(path);
+        });
+      });
+    }
+
+    // --- PAN & ZOOM INTERACTION ENGINE ---
+    function initPanning() {
+      const viewport = document.getElementById('viewport');
+      const canvas = document.getElementById('canvasViewport');
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.tree-card') || e.target.closest('button')) return;
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', () => isPanning = false);
+
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+        currentZoom = Math.min(Math.max(0.3, currentZoom * zoomFactor), 2.5);
+        applyTransform();
+      }, { passive: false });
+    }
+
+    function applyTransform() {
+      const canvas = document.getElementById('canvasViewport');
+      canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+    }
+
+    function zoomIn() { currentZoom = Math.min(2.5, currentZoom + 0.15); applyTransform(); }
+    function zoomOut() { currentZoom = Math.max(0.3, currentZoom - 0.15); applyTransform(); }
+    function resetZoom() { currentZoom = 1.0; panX = 0; panY = 0; applyTransform(); }
+
+    // --- THEMES & CUSTOMIZATION ---
+    function setTheme(themeKey) {
+      const viewport = document.getElementById('viewport');
+      viewport.className = `flex-1 relative overflow-hidden canvas-theme-container theme-${themeKey} flex items-center justify-center`;
+      setTimeout(drawConnectors, 30);
+    }
+
+    function toggleLayoutDirection() {
+      currentLayout = currentLayout === 'vertical' ? 'horizontal' : 'vertical';
+      document.getElementById('layoutBtnText').innerText = currentLayout === 'vertical' ? 'Vertical Tree' : 'Horizontal Tree';
+      renderTree();
+    }
+
+    function updateAvatarStyle(styleClass) {
+      avatarStyleClass = styleClass;
+      renderTree();
+    }
+
+    function updateBannerTitle(val) {
+      document.getElementById('displayBannerTitle').innerText = val || 'Family Tree';
+    }
+
+    function updateBannerSubtitle(val) {
+      document.getElementById('displayBannerSub').innerText = val || '';
+    }
+
+    // --- MEMBER MODAL & DRAWER LOGIC ---
+    function openAddMemberModal(targetId = null, relation = null) {
+      document.getElementById('modalTargetId').value = targetId || '';
+      document.getElementById('modalRelationType').value = relation || '';
+      
+      const title = relation === 'child' ? 'Add Child Member' : (relation === 'spouse' ? 'Add Spouse Partner' : 'Add Root Ancestor');
+      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-user-plus text-emerald-400"></i> ${title}`;
+
+      document.getElementById('addMemberForm').reset();
+      document.getElementById('memberModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('memberModal').classList.add('hidden');
+    }
+
+    function handleFileUpload(event, targetInputId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(targetInputId).value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleAddMemberSubmit(e) {
+      e.preventDefault();
+
+      const targetId = document.getElementById('modalTargetId').value;
+      const relation = document.getElementById('modalRelationType').value;
+
+      const newId = Date.now().toString();
+      const newMember = {
+        id: newId,
+        name: document.getElementById('mName').value,
+        badge: document.getElementById('mBadge').value,
+        gender: document.getElementById('mGender').value,
+        birth: document.getElementById('mBirth').value,
+        death: document.getElementById('mDeath').value,
+        photo: document.getElementById('mPhotoUrl').value,
+        bio: document.getElementById('mBio').value,
+        spouseId: null,
+        childrenIds: []
+      };
+
+      if (targetId && relation === 'child') {
+        const parent = familyData.find(m => m.id === targetId);
+        if (parent) {
+          parent.childrenIds = parent.childrenIds || [];
+          parent.childrenIds.push(newId);
+          if (parent.spouseId) {
+            const spouse = familyData.find(m => m.id === parent.spouseId);
+            if (spouse) {
+              spouse.childrenIds = spouse.childrenIds || [];
+              spouse.childrenIds.push(newId);
+            }
+          }
+        }
+      } else if (targetId && relation === 'spouse') {
+        const target = familyData.find(m => m.id === targetId);
+        if (target) {
+          target.spouseId = newId;
+          newMember.spouseId = targetId;
+          newMember.childrenIds = [...(target.childrenIds || [])];
+        }
+      }
+
+      familyData.push(newMember);
+      saveState();
+      closeModal();
+    }
+
+    // Side Profile Drawer Controls
+    function openDrawer(memberId) {
+      activeMemberId = memberId;
+      const member = familyData.find(m => m.id === memberId);
+      if (!member) return;
+
+      const drawer = document.getElementById('memberDrawer');
+      const container = document.getElementById('drawerContent');
+
+      container.innerHTML = `
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-400 uppercase mb-1">Full Name</label>
+            <input type="text" id="editName" value="${member.name}" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-400 uppercase mb-1">Relation Tag / Badge</label>
+            <input type="text" id="editBadge" value="${member.badge || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-slate-400 uppercase mb-1">Birth Date</label>
+              <input type="text" id="editBirth" value="${member.birth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-400 uppercase mb-1">Death Date</label>
+              <input type="text" id="editDeath" value="${member.death || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-400 uppercase mb-1">Photo Image URL</label>
+            <input type="url" id="editPhoto" value="${member.photo || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 mb-1">
+            <input type="file" accept="image/*" onchange="handleFileUpload(event, 'editPhoto')" class="text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:bg-slate-800 file:text-slate-300">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-400 uppercase mb-1">Bio / Quote</label>
+            <textarea id="editBio" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100">${member.bio || ''}</textarea>
+          </div>
+        </div>
+      `;
+
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeDrawer() {
+      document.getElementById('memberDrawer').classList.add('translate-x-full');
+      activeMemberId = null;
+    }
+
+    function saveMemberFromDrawer() {
+      if (!activeMemberId) return;
+      const member = familyData.find(m => m.id === activeMemberId);
+      if (member) {
+        member.name = document.getElementById('editName').value;
+        member.badge = document.getElementById('editBadge').value;
+        member.birth = document.getElementById('editBirth').value;
+        member.death = document.getElementById('editDeath').value;
+        member.photo = document.getElementById('editPhoto').value;
+        member.bio = document.getElementById('editBio').value;
+        saveState();
+        closeDrawer();
+      }
+    }
+
+    function deleteMemberFromDrawer() {
+      if (!activeMemberId) return;
+      if (confirm("Delete this member from the tree?")) {
+        familyData = familyData.filter(m => m.id !== activeMemberId);
+        familyData.forEach(m => {
+          if (m.spouseId === activeMemberId) m.spouseId = null;
+          if (m.childrenIds) m.childrenIds = m.childrenIds.filter(id => id !== activeMemberId);
+        });
+        saveState();
+        closeDrawer();
+      }
+    }
+
+    // --- EXPORT & BACKUP LOGIC ---
+    function openExportModal() {
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function setExportFrame(presetKey) {
+      selectedExportPreset = presetKey;
+      document.querySelectorAll('.export-preset-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500/50');
+        btn.classList.add('border-slate-800');
+      });
+      document.getElementById(`preset-${presetKey}`).classList.add('border-emerald-500/50');
+    }
+
+    function executeExport(format) {
+      closeExportModal();
+
+      const treeContainer = document.getElementById('treeContainer');
+      const viewport = document.getElementById('viewport');
+
+      // Save Zoom & Pan
+      const prevTransform = document.getElementById('canvasViewport').style.transform;
+      document.getElementById('canvasViewport').style.transform = 'scale(1) translate(0,0)';
+
+      // Temporary Social Media Frame Container Setup
+      const frameWrapper = document.createElement('div');
+      frameWrapper.className = `canvas-theme-container ${viewport.className} flex items-center justify-center p-12 aspect-${selectedExportPreset}`;
+      frameWrapper.style.position = 'fixed';
+      frameWrapper.style.left = '-9999px';
+      frameWrapper.style.top = '-9999px';
+
+      const cloneContainer = treeContainer.cloneNode(true);
+      frameWrapper.appendChild(cloneContainer);
+      document.body.appendChild(frameWrapper);
+
+      setTimeout(() => {
+        if (format === 'pdf') {
+          html2canvas(cloneContainer, { scale: 2, useCORS: true }).then(canvas => {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+              orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+              unit: 'px',
+              format: [canvas.width, canvas.height]
+            });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`family-tree-print.pdf`);
+            cleanup();
+          });
+        } else {
+          html2canvas(frameWrapper, { scale: 2, useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `family-tree-${selectedExportPreset}.${format}`;
+            link.href = canvas.toDataURL(`image/${format}`, 0.95);
+            link.click();
+            cleanup();
+          });
+        }
+      }, 100);
+
+      function cleanup() {
+        document.body.removeChild(frameWrapper);
+        document.getElementById('canvasViewport').style.transform = prevTransform;
+      }
+    }
+
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(familyData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `family_tree_backup.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            familyData = parsed;
+            saveState();
+          } else {
+            alert("Invalid family tree JSON structure.");
+          }
+        } catch(err) {
+          alert("Error reading JSON backup file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
