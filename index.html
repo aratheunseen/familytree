@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Export Engines -->
+  <!-- Export Engines (html2canvas & jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -36,7 +36,7 @@
 
   <style>
     /* Custom Scrollbars */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.8); }
     ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 99px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 215, 0, 0.8); }
@@ -51,13 +51,13 @@
     .canvas-panning { cursor: grabbing !important; }
     .canvas-grab { cursor: grab; }
 
-    /* --- LUXURY GOLDEN THEMES --- */
+    /* --- LUXURY THEMES --- */
 
     /* ১. গোল্ডেন রয়্যাল (Royal Golden - Default Primary Theme) */
     .theme-royal-gold {
       --bg-color: #0b0905;
       --bg-pattern: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.12) 0%, transparent 65%),
-                          radial-gradient(rgba(212, 175, 55, 0.25) 1px, transparent 1px);
+                          radial-gradient(rgba(212, 175, 55, 0.22) 1px, transparent 1px);
       --bg-pattern-size: 100% 100%, 32px 32px;
       --card-bg: linear-gradient(145deg, rgba(26, 22, 14, 0.96) 0%, rgba(15, 12, 7, 0.98) 100%);
       --card-border: #d4af37;
@@ -65,7 +65,7 @@
       --card-subtext: #d4cfc5;
       --accent-badge: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
       --badge-text: #0b0905;
-      --line-color: #d4af37;
+      --line-color: #ffd700;
       --line-shadow: drop-shadow(0px 2px 6px rgba(212, 175, 55, 0.4));
       --title-font: 'Noto Serif Bengali', serif;
       --title-color: #fef08a;
@@ -102,8 +102,8 @@
       --card-subtext: #cbd5e1;
       --accent-badge: linear-gradient(135deg, #10b981 0%, #047857 100%);
       --badge-text: #ffffff;
-      --line-color: #d4af37;
-      --line-shadow: drop-shadow(0px 2px 5px rgba(212, 175, 55, 0.3));
+      --line-color: #10b981;
+      --line-shadow: drop-shadow(0px 2px 5px rgba(16, 185, 129, 0.3));
       --title-font: 'Noto Serif Bengali', serif;
       --title-color: #a7f3d0;
       --gold-glow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
@@ -161,12 +161,21 @@
       stroke-width: 2.5px;
       fill: none;
       stroke-linecap: round;
+      stroke-linejoin: round;
       filter: var(--line-shadow);
     }
 
     .avatar-gold-frame {
       border: 2px solid #d4af37;
       box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Gender Visual Border Overlays */
+    .gender-border-male {
+      border-left: 4px solid #38bdf8 !important;
+    }
+    .gender-border-female {
+      border-left: 4px solid #f472b6 !important;
     }
 
     .focused-node-highlight {
@@ -179,14 +188,14 @@
       50% { box-shadow: 0 0 0 14px rgba(255, 215, 0, 0); }
     }
 
-    /* Export Frame Sizes */
+    /* Export Frame Aspect Ratios */
     .aspect-sq { width: 1200px; height: 1200px; }
     .aspect-port { width: 1200px; height: 1500px; }
     .aspect-story { width: 1080px; height: 1920px; }
     .aspect-land { width: 1200px; height: 675px; }
   </style>
 </head>
-<body class="h-screen w-screen flex flex-col bg-amber-950/20 text-slate-100 font-sans overflow-hidden antialiased select-none">
+<body class="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden antialiased select-none">
 
   <!-- EXECUTIVE HEADER -->
   <header class="h-16 bg-slate-950/95 border-b border-amber-500/30 px-4 flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
@@ -254,7 +263,7 @@
         <!-- Search -->
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-amber-500/70"></i>
-          <input type="text" id="memberSearchInput" oninput="renderMemberList()" placeholder="সদস্যের নাম খুঁজুন..." class="w-full bg-slate-900 border border-amber-500/30 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+          <input type="text" id="memberSearchInput" oninput="renderMemberList()" placeholder="সদস্যের নাম বা পদবী খুঁজুন..." class="w-full bg-slate-900 border border-amber-500/30 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
         </div>
 
         <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-semibold">
@@ -262,7 +271,7 @@
           <span id="memberCountBadge" class="font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-md">০ জন</span>
         </div>
 
-        <!-- Scrollable Cards -->
+        <!-- Scrollable Member Cards -->
         <div id="sidebarMemberList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
 
         <button onclick="prepareNewMemberForm()" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
@@ -292,11 +301,10 @@
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">লিঙ্গ</label>
+              <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">লিঙ্গ <span class="text-rose-400">*</span></label>
               <select id="fGender" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
-                <option value="male">পুরুষ</option>
-                <option value="female">নারী</option>
-                <option value="other">অন্যান্য</option>
+                <option value="male">পুরুষ (♂)</option>
+                <option value="female">নারী (♀)</option>
               </select>
             </div>
             <div>
@@ -311,7 +319,7 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">ছবি (Image URL / আপলোড)</label>
+            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">ছবি (URL / ফাইল আপলোড)</label>
             <input type="url" id="fPhotoUrl" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 mb-1.5 focus:outline-none focus:border-amber-400">
             <input type="file" id="fPhotoFile" accept="image/*" onchange="handleFileUpload(event, 'fPhotoUrl')" class="text-[10px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-slate-800 file:text-amber-300 hover:file:bg-slate-700">
           </div>
@@ -321,9 +329,9 @@
             <textarea id="fBio" rows="2" placeholder="সংক্ষিপ্ত বিবরণ বা পেশা..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400"></textarea>
           </div>
 
-          <!-- Relationships -->
+          <!-- Relationships Panel -->
           <div class="pt-2 border-t border-amber-500/20 space-y-2">
-            <p class="text-[11px] font-bold text-amber-400 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> সম্পর্ক নির্ধারণ</p>
+            <p class="text-[11px] font-bold text-amber-400 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> পারিবারিক সম্পর্ক</p>
 
             <div>
               <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">পিতা (Father):</label>
@@ -367,7 +375,7 @@
             <i class="fa-solid fa-heading text-amber-400 mr-1"></i> বংশতালিকার শিরোনাম
           </label>
           <input type="text" id="familyTitleInput" value="চৌধুরী পরিবারের বংশতালিকা" oninput="updateBannerTitle(this.value)" class="w-full bg-slate-900 border border-amber-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-100 font-bold focus:outline-none focus:border-amber-400 mb-2">
-          <input type="text" id="familySubTitleInput" value="প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 focus:outline-none focus:border-amber-400">
+          <input type="text" id="familySubTitleInput" value="প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য ও ধারাবাহিকতা" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 focus:outline-none focus:border-amber-400">
         </div>
 
         <!-- Layout Direction Toggle -->
@@ -441,19 +449,19 @@
     </aside>
 
     <!-- CANVAS VIEWPORT -->
-    <main id="viewport" class="flex-1 relative overflow-hidden bg-amber-950 canvas-theme-container theme-royal-gold flex items-center justify-center canvas-grab">
+    <main id="viewport" class="flex-1 relative overflow-hidden bg-slate-950 canvas-theme-container theme-royal-gold flex items-center justify-center canvas-grab">
       
       <!-- Transform Scale Container -->
       <div id="canvasViewport" class="viewport-canvas inline-block p-16">
         
         <!-- Target Content Render Box -->
-        <div id="treeContainer" class="relative inline-block min-w-[800px] p-12 rounded-3xl transition-all">
+        <div id="treeContainer" class="relative inline-block min-w-[900px] p-12 rounded-3xl transition-all">
           
           <!-- Banner Title -->
           <div class="text-center mb-12">
             <h2 id="displayBannerTitle" class="tree-title text-3xl sm:text-5xl font-black tracking-tight drop-shadow-md">চৌধুরী পরিবারের বংশতালিকা</h2>
-            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-85 mt-2 text-amber-200/80">প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য</p>
-            <div class="w-36 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-3"></div>
+            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-85 mt-2 text-amber-200/80">প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য ও ধারাবাহিকতা</p>
+            <div class="w-48 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-3"></div>
           </div>
 
           <!-- SVG Connecting Lines Overlay -->
@@ -563,10 +571,10 @@
   </div>
 
 
-  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <!-- APPLICATION LOGIC -->
   <script>
     // --- PERSISTENT STATE ---
-    const STORAGE_KEY = 'familyTree_gold_data';
+    const STORAGE_KEY = 'familyTree_app_data';
     
     let familyData = [];
     let currentLayout = 'vertical';
@@ -579,17 +587,17 @@
     let panX = 0, panY = 0;
     let isPanning = false, startX = 0, startY = 0;
 
-    // Initial Default Family Data
+    // Rich 3-Generation Initial Bengali Dataset
     const initialDefaultData = [
       {
         id: "1",
-        name: "চৌধুরী আব্দুর রহমান",
+        name: "আলহাজ্ব চৌধুরী আব্দুর রহমান",
         badge: "মূল পুরুষ (প্রপিতামহ)",
         gender: "male",
         birth: "১৯২৫",
         death: "১৯৯৮",
         photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
-        bio: "সমাজসেবক ও বিশিষ্ট ব্যক্তিত্ব",
+        bio: "সমাজসেবক ও বিশিষ্ট শিক্ষানুরাগী",
         spouseId: "2",
         fatherId: null,
         motherId: null,
@@ -597,7 +605,7 @@
       },
       {
         id: "2",
-        name: "রাহেলা বেগম",
+        name: "বেগম রাহেলা রহমান",
         badge: "প্রপিতামহী",
         gender: "female",
         birth: "১৯৩২",
@@ -625,7 +633,7 @@
       },
       {
         id: "4",
-        name: "নাসরীন আক্তার চৌধুরী",
+        name: "অধ্যাপিকা নাসরীন আক্তার চৌধুরী",
         badge: "কন্যা",
         gender: "female",
         birth: "১৯৬২",
@@ -645,7 +653,7 @@
         birth: "১৯৬২",
         death: "জীবিত",
         photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop&q=80",
-        bio: "চিত্রশিল্পী ও শিক্ষাবিদ",
+        bio: "চিত্রশিল্পী ও সমাজকর্মী",
         spouseId: "3",
         fatherId: null,
         motherId: null,
@@ -667,7 +675,7 @@
       },
       {
         id: "7",
-        name: "নুসরাত জাহান চৌধুরী",
+        name: "ডাঃ নুসরাত জাহান চৌধুরী",
         badge: "পৌত্রী (নাতনি)",
         gender: "female",
         birth: "১৯৯৫",
@@ -759,7 +767,7 @@
 
       // Mouse Panning
       viewport.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.tree-card') || e.target.closest('button') || e.target.closest('input')) return;
+        if (e.target.closest('.tree-card') || e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
         isPanning = true;
         startX = e.clientX - panX;
         startY = e.clientY - panY;
@@ -851,6 +859,10 @@
           ? `<img src="${m.photo}" class="w-8 h-8 rounded-full object-cover border border-amber-400/80">`
           : `<div class="w-8 h-8 rounded-full bg-slate-800 border border-amber-500/30 flex items-center justify-center text-xs text-amber-400"><i class="fa-solid fa-user"></i></div>`;
 
+        const genderTag = m.gender === 'female' 
+          ? `<span class="text-[10px] text-pink-400 font-bold">♀ নারী</span>`
+          : `<span class="text-[10px] text-sky-400 font-bold">♂ পুরুষ</span>`;
+
         item.onclick = () => focusMemberNode(m.id);
 
         item.innerHTML = `
@@ -858,7 +870,7 @@
             ${avatar}
             <div class="overflow-hidden">
               <h5 class="text-xs font-bold text-amber-100 truncate group-hover:text-amber-400 transition">${m.name}</h5>
-              <p class="text-[10px] text-slate-400 truncate">${m.badge || 'পরিবার সদস্য'}</p>
+              <p class="text-[10px] text-slate-400 truncate">${m.badge || 'পরিবার সদস্য'} • ${genderTag}</p>
             </div>
           </div>
           <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
@@ -891,11 +903,11 @@
       }, 3000);
     }
 
-    // --- TREE RENDER ENGINE ---
-    let spouseVisitedMap = new Set();
+    // --- TREE RENDER ENGINE (DUAL PARENT & SIBLING BUS SUPPORT) ---
+    let renderedMemberSet = new Set();
 
     function renderTree() {
-      spouseVisitedMap.clear();
+      renderedMemberSet.clear();
 
       const container = document.getElementById('treeBranchRoot');
       container.innerHTML = '';
@@ -914,9 +926,26 @@
         return;
       }
 
-      // Root Identification Logic
+      // Root Identification Logic: Members with no parents in tree
       const allChildrenIds = new Set(familyData.flatMap(m => m.childrenIds || []));
-      const rootMembers = familyData.filter(m => !allChildrenIds.has(m.id) && !m.fatherId && !spouseVisitedMap.has(m.id));
+      
+      // Secondary spouse checks so spouses aren't duplicated at root level
+      const spousesToSkipAsRoot = new Set();
+      familyData.forEach(m => {
+        if (m.spouseId && (!m.fatherId && !m.motherId)) {
+          const spouse = familyData.find(s => s.id === m.spouseId);
+          if (spouse && (spouse.fatherId || spouse.motherId || spouse.id < m.id)) {
+            spousesToSkipAsRoot.add(m.id);
+          }
+        }
+      });
+
+      const rootMembers = familyData.filter(m => 
+        !allChildrenIds.has(m.id) && 
+        !m.fatherId && 
+        !m.motherId && 
+        !spousesToSkipAsRoot.has(m.id)
+      );
 
       const treeWrapper = document.createElement('div');
       treeWrapper.style.gap = `${nodeGapSpacing}px`;
@@ -924,18 +953,19 @@
         ? 'flex justify-center items-start' 
         : 'flex flex-col items-start justify-center';
 
-      let visitedSet = new Set();
       rootMembers.forEach(root => {
-        treeWrapper.appendChild(buildBranch(root.id, visitedSet));
+        if (!renderedMemberSet.has(root.id)) {
+          treeWrapper.appendChild(buildBranch(root.id));
+        }
       });
 
       container.appendChild(treeWrapper);
       setTimeout(drawConnectors, 40);
     }
 
-    function buildBranch(memberId, visited) {
-      if (visited.has(memberId)) return document.createElement('div');
-      visited.add(memberId);
+    function buildBranch(memberId) {
+      if (renderedMemberSet.has(memberId)) return document.createElement('div');
+      renderedMemberSet.add(memberId);
 
       const member = familyData.find(m => m.id === memberId);
       if (!member) return document.createElement('div');
@@ -945,39 +975,58 @@
         ? 'flex flex-col items-center'
         : 'flex items-center';
 
-      // Couple Row
+      // Couple Row Container
       const coupleDiv = document.createElement('div');
       coupleDiv.className = 'flex items-center gap-3 relative z-10';
 
       coupleDiv.appendChild(createMemberCard(member));
 
-      // Spouse Card
+      let spouse = null;
       if (member.spouseId) {
-        const spouse = familyData.find(m => m.id === member.spouseId);
-        if (spouse) {
-          spouseVisitedMap.add(spouse.id);
+        spouse = familyData.find(m => m.id === member.spouseId);
+        if (spouse && !renderedMemberSet.has(spouse.id)) {
+          renderedMemberSet.add(spouse.id);
 
-          const heartTag = document.createElement('div');
-          heartTag.className = 'w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center font-bold text-[10px] shadow-lg border border-yellow-300';
-          heartTag.innerHTML = '<i class="fa-solid fa-heart"></i>';
+          // Golden Marriage Connector Badge with Ring & Heart
+          const marriageAnchor = document.createElement('div');
+          marriageAnchor.id = `spouse-union-${member.id}-${spouse.id}`;
+          marriageAnchor.className = 'w-7 h-7 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 text-slate-950 flex items-center justify-center font-bold text-xs shadow-lg border border-yellow-200 z-20 shrink-0';
+          marriageAnchor.title = 'বিবাহিত দম্পতি (Spouse Union)';
+          marriageAnchor.innerHTML = '<i class="fa-solid fa-heart text-rose-800 text-[11px]"></i>';
 
-          coupleDiv.appendChild(heartTag);
+          coupleDiv.appendChild(marriageAnchor);
           coupleDiv.appendChild(createMemberCard(spouse));
         }
       }
 
       branch.appendChild(coupleDiv);
 
-      // Render Children
-      if (member.childrenIds && member.childrenIds.length > 0) {
+      // Collect Union Children (Children of member + spouse)
+      let children = [];
+      const primaryChildrenIds = member.childrenIds || [];
+      const spouseChildrenIds = spouse ? (spouse.childrenIds || []) : [];
+      const combinedChildrenIds = Array.from(new Set([...primaryChildrenIds, ...spouseChildrenIds]));
+
+      combinedChildrenIds.forEach(cId => {
+        const childObj = familyData.find(f => f.id === cId);
+        if (childObj && !children.some(c => c.id === cId)) {
+          children.push(childObj);
+        }
+      });
+
+      // Render Children Sub-branches
+      if (children.length > 0) {
         const childrenContainer = document.createElement('div');
+        childrenContainer.id = `children-group-${member.id}`;
         childrenContainer.style.gap = `${nodeGapSpacing}px`;
         childrenContainer.className = currentLayout === 'vertical'
           ? 'flex relative pt-12'
           : 'flex flex-col relative pl-12';
 
-        member.childrenIds.forEach(childId => {
-          childrenContainer.appendChild(buildBranch(childId, visited));
+        children.forEach(child => {
+          if (!renderedMemberSet.has(child.id)) {
+            childrenContainer.appendChild(buildBranch(child.id));
+          }
         });
 
         branch.appendChild(childrenContainer);
@@ -989,7 +1038,9 @@
     function createMemberCard(member) {
       const card = document.createElement('div');
       card.id = `node-${member.id}`;
-      card.className = `tree-card w-56 rounded-2xl p-3 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1`;
+      
+      const genderBorderClass = member.gender === 'female' ? 'gender-border-female' : 'gender-border-male';
+      card.className = `tree-card w-56 rounded-2xl p-3 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1 ${genderBorderClass}`;
       
       card.onclick = (e) => {
         e.stopPropagation();
@@ -997,8 +1048,12 @@
       };
 
       const avatar = member.photo 
-        ? `<img src="${member.photo}" class="w-12 h-12 ${avatarStyleClass} object-cover avatar-gold-frame shrink-0" alt="${member.name}">`
-        : `<div class="w-12 h-12 ${avatarStyleClass} bg-slate-900 avatar-gold-frame flex items-center justify-center text-amber-400 text-lg font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
+        ? `<img src="${member.photo}" class="w-11 h-11 ${avatarStyleClass} object-cover avatar-gold-frame shrink-0" alt="${member.name}">`
+        : `<div class="w-11 h-11 ${avatarStyleClass} bg-slate-900 avatar-gold-frame flex items-center justify-center text-amber-400 text-base font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
+
+      const genderBadge = member.gender === 'female'
+        ? `<span class="text-[10px] text-pink-400 font-bold bg-pink-950/80 px-1.5 py-0.5 rounded border border-pink-500/40" title="female">♀ নারী</span>`
+        : `<span class="text-[10px] text-sky-400 font-bold bg-sky-950/80 px-1.5 py-0.5 rounded border border-sky-500/40" title="male">♂ পুরুষ</span>`;
 
       const dates = (member.birth || member.death) ? `${toBengaliNumerals(member.birth || '?')} – ${toBengaliNumerals(member.death || 'জীবিত')}` : '';
 
@@ -1006,13 +1061,16 @@
         <div class="flex items-center space-x-2.5">
           ${avatar}
           <div class="overflow-hidden flex-1">
-            ${member.badge ? `<span class="tree-badge inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mb-0.5">${member.badge}</span>` : ''}
+            <div class="flex items-center gap-1 mb-0.5 flex-wrap">
+              ${member.badge ? `<span class="tree-badge text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded-full">${member.badge}</span>` : ''}
+              ${genderBadge}
+            </div>
             <h4 class="font-bold text-xs truncate leading-tight">${member.name}</h4>
             ${dates ? `<p class="tree-card-subtext text-[10px] font-semibold opacity-90 mt-0.5">${dates}</p>` : ''}
           </div>
         </div>
 
-        <!-- Floating Controls -->
+        <!-- Floating Quick Action Bar -->
         <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all flex gap-1.5 bg-slate-950 border border-amber-500/50 rounded-full px-2.5 py-0.5 shadow-xl z-20 text-[10px]">
           <button onclick="event.stopPropagation(); prepareAddChildForm('${member.id}')" class="font-bold text-amber-400 hover:underline">+সন্তান</button>
           <span class="text-slate-700">|</span>
@@ -1025,49 +1083,72 @@
       return card;
     }
 
-    // Dynamic Connection Lines Rendering
+    // Dynamic Connection Lines Rendering (With Dual Parent & Sibling Bus Lines)
     function drawConnectors() {
       const svg = document.getElementById('svgConnectors');
       svg.innerHTML = '';
 
-      familyData.forEach(parent => {
-        if (!parent.childrenIds || parent.childrenIds.length === 0) return;
+      const containerRect = document.getElementById('treeContainer').getBoundingClientRect();
 
-        const parentEl = document.getElementById(`node-${parent.id}`);
-        if (!parentEl) return;
+      familyData.forEach(member => {
+        if (!member.childrenIds || member.childrenIds.length === 0) return;
 
-        const pRect = parentEl.getBoundingClientRect();
-        const containerRect = document.getElementById('treeContainer').getBoundingClientRect();
+        const parentCard = document.getElementById(`node-${member.id}`);
+        if (!parentCard) return;
 
-        parent.childrenIds.forEach(childId => {
-          const childEl = document.getElementById(`node-${childId}`);
-          if (!childEl) return;
+        const pRect = parentCard.getBoundingClientRect();
+        let startX, startY;
 
-          const cRect = childEl.getBoundingClientRect();
+        // Check if member has a spouse present
+        let spouseCard = null;
+        if (member.spouseId) {
+          spouseCard = document.getElementById(`node-${member.spouseId}`);
+        }
 
-          let x1, y1, x2, y2;
+        if (spouseCard) {
+          const sRect = spouseCard.getBoundingClientRect();
+          if (currentLayout === 'vertical') {
+            startX = (Math.min(pRect.left, sRect.left) + Math.max(pRect.right, sRect.right)) / 2 - containerRect.left;
+            startY = Math.max(pRect.bottom, sRect.bottom) - containerRect.top;
+          } else {
+            startX = Math.max(pRect.right, sRect.right) - containerRect.left;
+            startY = (Math.min(pRect.top, sRect.top) + Math.max(pRect.bottom, sRect.bottom)) / 2 - containerRect.top;
+          }
+        } else {
+          if (currentLayout === 'vertical') {
+            startX = pRect.left + pRect.width / 2 - containerRect.left;
+            startY = pRect.bottom - containerRect.top;
+          } else {
+            startX = pRect.right - containerRect.left;
+            startY = pRect.top + pRect.height / 2 - containerRect.top;
+          }
+        }
+
+        // Draw connections to each child
+        member.childrenIds.forEach(childId => {
+          const childCard = document.getElementById(`node-${childId}`);
+          if (!childCard) return;
+
+          const cRect = childCard.getBoundingClientRect();
+          let endX, endY;
 
           if (currentLayout === 'vertical') {
-            x1 = pRect.left + pRect.width / 2 - containerRect.left;
-            y1 = pRect.bottom - containerRect.top;
-            x2 = cRect.left + cRect.width / 2 - containerRect.left;
-            y2 = cRect.top - containerRect.top;
+            endX = cRect.left + cRect.width / 2 - containerRect.left;
+            endY = cRect.top - containerRect.top;
           } else {
-            x1 = pRect.right - containerRect.left;
-            y1 = pRect.top + pRect.height / 2 - containerRect.top;
-            x2 = cRect.left - containerRect.left;
-            y2 = cRect.top + cRect.height / 2 - containerRect.top;
+            endX = cRect.left - containerRect.left;
+            endY = cRect.top + cRect.height / 2 - containerRect.top;
           }
 
           const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           path.setAttribute('class', 'tree-line');
-          
+
           if (currentLayout === 'vertical') {
-            const midY = y1 + (y2 - y1) / 2;
-            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+            const midY = startY + (endY - startY) / 2;
+            path.setAttribute('d', `M ${startX} ${startY} V ${midY} H ${endX} V ${endY}`);
           } else {
-            const midX = x1 + (x2 - x1) / 2;
-            path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+            const midX = startX + (endX - startX) / 2;
+            path.setAttribute('d', `M ${startX} ${startY} H ${midX} V ${endY} H ${endX}`);
           }
 
           svg.appendChild(path);
@@ -1086,9 +1167,14 @@
       spouseSelect.innerHTML = '<option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>';
 
       familyData.forEach(m => {
-        const optionText = `${m.name} (${m.badge || 'সদস্য'})`;
-        fatherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
-        motherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
+        const genderLabel = m.gender === 'female' ? '♀' : '♂';
+        const optionText = `${m.name} (${m.badge || 'সদস্য'}) ${genderLabel}`;
+        
+        if (m.gender === 'male') {
+          fatherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
+        } else {
+          motherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
+        }
         spouseSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
       });
     }
@@ -1169,12 +1255,19 @@
       }
 
       // Sync Relationships
-      const primaryParentId = fatherId || motherId;
-      if (primaryParentId) {
-        const parent = familyData.find(m => m.id === primaryParentId);
-        if (parent) {
-          parent.childrenIds = parent.childrenIds || [];
-          if (!parent.childrenIds.includes(memberObj.id)) parent.childrenIds.push(memberObj.id);
+      if (fatherId) {
+        const father = familyData.find(m => m.id === fatherId);
+        if (father) {
+          father.childrenIds = father.childrenIds || [];
+          if (!father.childrenIds.includes(memberObj.id)) father.childrenIds.push(memberObj.id);
+        }
+      }
+
+      if (motherId) {
+        const mother = familyData.find(m => m.id === motherId);
+        if (mother) {
+          mother.childrenIds = mother.childrenIds || [];
+          if (!mother.childrenIds.includes(memberObj.id)) mother.childrenIds.push(memberObj.id);
         }
       }
 
@@ -1268,7 +1361,7 @@
     function exportJSONData() {
       const exportObject = {
         appName: "FamilyTree Royal Gold Studio",
-        version: "3.0",
+        version: "3.5",
         exportDate: new Date().toISOString(),
         bannerTitle: document.getElementById('familyTitleInput').value,
         bannerSubtitle: document.getElementById('familySubTitleInput').value,
