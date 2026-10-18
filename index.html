@@ -4,1478 +4,1443 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FamilyTree - বংশতালিকা</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Bengali Fonts -->
+  <!-- Google Fonts: Hind Siliguri for elegant Bengali typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Export Engines (html2canvas & jsPDF) -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- html2canvas & jsPDF for high-res exports -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Hind Siliguri"', '"Anek Bangla"', 'sans-serif'],
-            serif: ['"Noto Serif Bengali"', 'serif'],
-            bangla: ['"Hind Siliguri"', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-
+  
   <style>
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.8); }
-    ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 99px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 215, 0, 0.8); }
-
-    /* Canvas Transformations & Gestures */
-    .viewport-canvas {
-      user-select: none;
-      transform-origin: 0 0;
-      will-change: transform;
-      touch-action: none;
-    }
-    .canvas-panning { cursor: grabbing !important; }
-    .canvas-grab { cursor: grab; }
-
-    /* --- LUXURY THEMES --- */
-
-    /* ১. গোল্ডেন রয়্যাল (Royal Golden - Default Primary Theme) */
-    .theme-royal-gold {
-      --bg-color: #0b0905;
-      --bg-pattern: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.12) 0%, transparent 65%),
-                          radial-gradient(rgba(212, 175, 55, 0.22) 1px, transparent 1px);
-      --bg-pattern-size: 100% 100%, 32px 32px;
-      --card-bg: linear-gradient(145deg, rgba(26, 22, 14, 0.96) 0%, rgba(15, 12, 7, 0.98) 100%);
-      --card-border: #d4af37;
-      --card-text: #fffdfa;
-      --card-subtext: #d4cfc5;
-      --accent-badge: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-      --badge-text: #0b0905;
-      --line-color: #ffd700;
-      --line-shadow: drop-shadow(0px 2px 6px rgba(212, 175, 55, 0.4));
-      --title-font: 'Noto Serif Bengali', serif;
-      --title-color: #fef08a;
-      --gold-glow: 0 10px 30px -5px rgba(212, 175, 55, 0.25);
+    :root {
+      --bg-dark: #0B0E14;
+      --bg-card: #151A23;
+      --bg-card-hover: #1C2330;
+      --border-gold: rgba(212, 175, 55, 0.35);
+      --border-gold-bright: #D4AF37;
+      --gold-gradient: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --accent-blue: #38BDF8;
+      --accent-pink: #F472B6;
+      --accent-emerald: #10B981;
+      --accent-purple: #A855F7;
+      --card-radius: 14px;
+      --shadow-premium: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 15px rgba(212, 175, 55, 0.15);
     }
 
-    /* ২. অভিজাত লাইট (Slate Gold) */
-    .theme-slate-gold {
-      --bg-color: #f8fafc;
-      --bg-pattern: radial-gradient(rgba(180, 140, 30, 0.2) 1.2px, transparent 1.2px);
-      --bg-pattern-size: 28px 28px;
-      --card-bg: #ffffff;
-      --card-border: #b8860b;
-      --card-text: #0f172a;
-      --card-subtext: #475569;
-      --accent-badge: #b8860b;
-      --badge-text: #ffffff;
-      --line-color: #b8860b;
-      --line-shadow: none;
-      --title-font: 'Hind Siliguri', sans-serif;
-      --title-color: #1e293b;
-      --gold-glow: 0 8px 20px -4px rgba(184, 134, 11, 0.15);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Hind Siliguri', sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ৩. ডার্ক এমারেল্ড (Dark Emerald Gold) */
-    .theme-emerald-gold {
-      --bg-color: #03140e;
-      --bg-pattern: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 60%),
-                          radial-gradient(rgba(212, 175, 55, 0.2) 1.2px, transparent 1.2px);
-      --bg-pattern-size: 100% 100%, 30px 30px;
-      --card-bg: linear-gradient(145deg, rgba(6, 38, 25, 0.96) 0%, rgba(3, 20, 14, 0.98) 100%);
-      --card-border: #d4af37;
-      --card-text: #f8fafc;
-      --card-subtext: #cbd5e1;
-      --accent-badge: linear-gradient(135deg, #10b981 0%, #047857 100%);
-      --badge-text: #ffffff;
-      --line-color: #10b981;
-      --line-shadow: drop-shadow(0px 2px 5px rgba(16, 185, 129, 0.3));
-      --title-font: 'Noto Serif Bengali', serif;
-      --title-color: #a7f3d0;
-      --gold-glow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* ৪. সফিস্টিকেটেড ক্লাসিক (Pure Minimal) */
-    .theme-minimal-dark {
-      --bg-color: #0f172a;
-      --bg-pattern: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                          linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-      --bg-pattern-size: 32px 32px;
-      --card-bg: #1e293b;
-      --card-border: #38bdf8;
-      --card-text: #f8fafc;
-      --card-subtext: #94a3b8;
-      --accent-badge: #0284c7;
-      --badge-text: #ffffff;
-      --line-color: #38bdf8;
-      --line-shadow: none;
-      --title-font: 'Anek Bangla', sans-serif;
-      --title-color: #38bdf8;
-      --gold-glow: 0 8px 20px -4px rgba(56, 189, 248, 0.2);
+    /* Top Header Bar */
+    header {
+      height: 60px;
+      background: rgba(15, 20, 29, 0.95);
+      border-bottom: 1px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
     }
 
-    /* Dynamic Canvas Applied Theme Classes */
-    .canvas-theme-container {
-      background-color: var(--bg-color);
-      background-image: var(--bg-pattern);
-      background-size: var(--bg-pattern-size);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .tree-card {
-      background: var(--card-bg);
-      border: 1.5px solid var(--card-border);
-      color: var(--card-text);
-      box-shadow: var(--gold-glow);
-    }
-
-    .tree-card-subtext {
-      color: var(--card-subtext);
-    }
-
-    .tree-title {
-      font-family: var(--title-font);
-      color: var(--title-color);
-    }
-
-    .tree-badge {
-      background: var(--accent-badge);
-      color: var(--badge-text);
-    }
-
-    .tree-line {
-      stroke: var(--line-color);
-      stroke-width: 2.5px;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      filter: var(--line-shadow);
-    }
-
-    .avatar-gold-frame {
-      border: 2px solid #d4af37;
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--gold-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: bold;
+      font-size: 20px;
       box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
     }
 
-    /* Gender Visual Border Overlays */
-    .gender-border-male {
-      border-left: 4px solid #38bdf8 !important;
-    }
-    .gender-border-female {
-      border-left: 4px solid #f472b6 !important;
-    }
-
-    .focused-node-highlight {
-      outline: 3px solid #ffd700;
-      animation: goldPulse 1.8s infinite;
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
     }
 
-    @keyframes goldPulse {
-      0%, 100% { box-shadow: 0 0 0 0px rgba(255, 215, 0, 0.8); }
-      50% { box-shadow: 0 0 0 14px rgba(255, 215, 0, 0); }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    /* Export Frame Aspect Ratios */
-    .aspect-sq { width: 1200px; height: 1200px; }
-    .aspect-port { width: 1200px; height: 1500px; }
-    .aspect-story { width: 1080px; height: 1920px; }
-    .aspect-land { width: 1200px; height: 675px; }
+    .btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(212, 175, 55, 0.15);
+      border-color: var(--border-gold-bright);
+      transform: translateY(-1px);
+    }
+
+    .btn-gold {
+      background: var(--gold-gradient);
+      color: #000;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-gold:hover {
+      filter: brightness(1.1);
+      color: #000;
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Sidebar Controls */
+    .sidebar {
+      width: 360px;
+      background: #11151F;
+      border-right: 1px solid var(--border-gold);
+      display: flex;
+      flex-direction: column;
+      z-index: 90;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: #FFD700;
+      border-bottom-color: #D4AF37;
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--border-gold-bright);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Member Drag List */
+    .search-box {
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .member-list-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+
+    .member-list-item:active {
+      cursor: grabbing;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .member-list-item.dragging {
+      opacity: 0.4;
+      border: 2px dashed #D4AF37;
+    }
+
+    .member-drag-handle {
+      color: var(--text-muted);
+      cursor: grab;
+      font-size: 16px;
+      padding: 2px;
+    }
+
+    .member-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-gold-bright);
+      object-fit: cover;
+      background: #202736;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #FFD700;
+    }
+
+    .member-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .member-name {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .member-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .member-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Canvas Area */
+    .canvas-viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background-color: #0A0D14;
+      background-image: 
+        radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      cursor: grab;
+    }
+
+    .canvas-viewport:active {
+      cursor: grabbing;
+    }
+
+    .tree-container {
+      position: absolute;
+      transform-origin: 0 0;
+      transition: transform 0.05s ease-out;
+      will-change: transform;
+      padding: 100px;
+      min-width: 5000px;
+      min-height: 5000px;
+    }
+
+    /* SVG Layer for Connections */
+    .tree-svg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Family Card Node */
+    .tree-node-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+    }
+
+    .family-card {
+      position: absolute;
+      width: 180px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--card-radius);
+      padding: 12px;
+      text-align: center;
+      box-shadow: var(--shadow-premium);
+      transition: box-shadow 0.2s, border-color 0.2s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .family-card:hover {
+      border-color: var(--border-gold-bright);
+      box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3);
+      z-index: 10;
+    }
+
+    .family-card.male {
+      border-top: 3px solid var(--accent-blue);
+    }
+
+    .family-card.female {
+      border-top: 3px solid var(--accent-pink);
+    }
+
+    .card-avatar-wrap {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 8px;
+    }
+
+    .card-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-gold-bright);
+      background: #0F141D;
+    }
+
+    .gender-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #fff;
+      border: 2px solid var(--bg-card);
+    }
+
+    .gender-badge.male { background: var(--accent-blue); }
+    .gender-badge.female { background: var(--accent-pink); }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-role {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .card-dates {
+      font-size: 11px;
+      color: #D4AF37;
+      background: rgba(212, 175, 55, 0.1);
+      padding: 2px 6px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    /* Floating Zoom Controls */
+    .zoom-controls {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(17, 21, 31, 0.9);
+      border: 1px solid var(--border-gold);
+      border-radius: 30px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 80;
+      backdrop-filter: blur(8px);
+    }
+
+    .zoom-btn {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 18px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .zoom-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFD700;
+    }
+
+    .zoom-badge {
+      font-size: 13px;
+      font-weight: 600;
+      color: #FFD700;
+      min-width: 45px;
+      text-align: center;
+    }
+
+    .zoom-slider {
+      width: 90px;
+      accent-color: #D4AF37;
+      cursor: pointer;
+    }
+
+    /* SVG Connection Line Styling */
+    .connector-line {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s, stroke-width 0.3s;
+    }
+
+    .line-spouse {
+      stroke: url(#spouseGradient);
+      stroke-width: 3px;
+      stroke-dasharray: 4 2;
+    }
+
+    .line-parent {
+      stroke: url(#parentGradient);
+      stroke-width: 3px;
+    }
+
+    .line-sibling {
+      stroke: url(#siblingGradient);
+      stroke-width: 2.5px;
+    }
+
+    .line-alt {
+      stroke: url(#altGradient);
+      stroke-width: 2.5px;
+    }
+
+    /* Heart Marker on Spouse Union */
+    .spouse-heart-marker {
+      fill: #FF4D6D;
+      filter: drop-shadow(0 0 4px rgba(255, 77, 109, 0.8));
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #151A23;
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      width: 450px;
+      max-width: 90vw;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFD700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Export Format Grid */
+    .export-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .export-option {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .export-option:hover, .export-option.selected {
+      border-color: var(--border-gold-bright);
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .export-icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .export-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .export-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
   </style>
 </head>
-<body class="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden antialiased select-none">
+<body>
 
-  <!-- EXECUTIVE HEADER -->
-  <header class="h-16 bg-slate-950/95 border-b border-amber-500/30 px-4 flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
-    
-    <!-- Brand Title -->
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 via-amber-500 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20 border border-amber-300">
-        <i class="fa-solid fa-crown"></i>
-      </div>
-      <div>
-        <h1 class="text-xl font-black tracking-tight text-amber-200 flex items-center gap-2 font-serif">
-          FamilyTree <span class="text-amber-400 text-sm font-sans font-normal">(বংশতালিকা)</span>
-        </h1>
-      </div>
+  <!-- Top Header Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">ব</div>
+      <div class="brand-title">FamilyTree - বংশতালিকা</div>
     </div>
 
-    <!-- Header Actions -->
-    <div class="flex items-center space-x-2">
-      <!-- Backup Save/Load -->
-      <button onclick="exportJSONData()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-amber-200 rounded-lg border border-amber-500/40 transition flex items-center gap-1.5" title="বাংলা ডাটা ফাইল সেভ করুন">
-        <i class="fa-solid fa-download text-amber-400"></i> <span class="hidden md:inline">ডাটা সেভ (.JSON)</span>
+    <div class="top-actions">
+      <button class="btn" onclick="exportJSON()">
+        💾 ডাটা ব্যাকআপ (JSON)
       </button>
-      
-      <label class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
-        <i class="fa-solid fa-upload text-amber-400"></i> <span class="hidden md:inline">ডাটা লোড</span>
-        <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="importJSONData(event)">
-      </label>
-
-      <!-- Reset Tree Data -->
-      <button onclick="confirmResetData()" class="p-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-rose-400 rounded-lg border border-slate-800 transition" title="রিসেট ডেমো ডাটা">
-        <i class="fa-solid fa-rotate-left"></i>
+      <button class="btn" onclick="importJSON()">
+        📂 ব্যাকআপ লোড
       </button>
-
-      <div class="h-6 w-px bg-slate-800 mx-1"></div>
-
-      <!-- Export Modal Launcher -->
-      <button onclick="openExportModal()" class="px-4 py-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 hover:brightness-110 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center gap-2 border border-amber-300">
-        <i class="fa-solid fa-file-export text-sm"></i> এক্সপোর্ট ও প্রিন্ট
+      <button class="btn btn-gold" onclick="openExportModal()">
+        🖼️ সোশ্যাল মিডিয়া ও প্রিন্ট এক্সপোর্ট
       </button>
     </div>
-
   </header>
 
-  <!-- STUDIO WORKSPACE -->
-  <div class="flex-1 flex relative overflow-hidden">
-
-    <!-- LEFT SIDEBAR: 3 TABS -->
-    <aside class="w-80 bg-slate-950/95 border-r border-amber-500/20 flex flex-col shrink-0 z-20 backdrop-blur-md">
-      
-      <!-- TAB NAVIGATION -->
-      <div class="flex border-b border-amber-500/20 bg-slate-900/80 p-1">
-        <button onclick="switchSidebarTab('members')" id="tabBtn-members" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-amber-300 bg-slate-800 border border-amber-500/30 flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-users text-amber-400"></i> সদস্য তালিকা
-        </button>
-        <button onclick="switchSidebarTab('form')" id="tabBtn-form" class="flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-user-plus"></i> তথ্য ফর্ম
-        </button>
-        <button onclick="switchSidebarTab('design')" id="tabBtn-design" class="flex-1 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-sliders"></i> লেআউট ও ডিজাইন
-        </button>
+  <!-- Workspace Container -->
+  <div class="workspace">
+    
+    <!-- Sidebar Control Panel -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" onclick="switchTab('listTab')">সদস্য তালিকা</button>
+        <button class="tab-btn" onclick="switchTab('formTab')">সদস্য যোগ / এডিট</button>
+        <button class="tab-btn" onclick="switchTab('settingsTab')">লেআউট ও ডিজাইন</button>
       </div>
 
-      <!-- TAB 1: MEMBER LIST (সদস্য তালিকা) -->
-      <div id="tabContent-members" class="flex-1 flex flex-col overflow-hidden p-3 space-y-3">
-        <!-- Search -->
-        <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-amber-500/70"></i>
-          <input type="text" id="memberSearchInput" oninput="renderMemberList()" placeholder="সদস্যের নাম বা পদবী খুঁজুন..." class="w-full bg-slate-900 border border-amber-500/30 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+      <!-- Tab 1: Member List with Drag and Drop -->
+      <div id="listTab" class="tab-content active">
+        <div class="search-box">
+          <input type="text" id="memberSearch" class="form-control" placeholder="খুঁজুন (নাম বা পদবি)..." oninput="filterMemberList()">
         </div>
-
-        <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-semibold">
-          <span>মোট পরিবার সদস্য:</span>
-          <span id="memberCountBadge" class="font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-md">০ জন</span>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+          💡 ড্র্যাগ (⋮⋮) করে ভাই-বোনদের ক্রমানুসারে সাজান। ক্যানভাসে রেখা স্বয়ংক্রিয়ভাবে পরিচ্ছন্ন থাকবে।
         </div>
-
-        <!-- Scrollable Member Cards -->
-        <div id="sidebarMemberList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
-
-        <button onclick="prepareNewMemberForm()" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-plus text-amber-400"></i> নতুন সদস্য যোগ করুন
-        </button>
+        <div id="memberDragList"></div>
       </div>
 
-      <!-- TAB 2: FORM FILL-UP (সদস্য যোগ / সম্পাদনা) -->
-      <div id="tabContent-form" class="hidden flex-1 overflow-y-auto p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
-          <h3 id="formHeadingTitle" class="font-bold text-xs text-amber-400 uppercase tracking-wider">নতুন সদস্য যোগ করুন</h3>
-          <button onclick="clearFormFill()" class="text-[11px] text-slate-400 hover:text-white underline">নতুন ফর্ম</button>
-        </div>
+      <!-- Tab 2: Add/Edit Member Form -->
+      <div id="formTab" class="tab-content">
+        <form id="memberForm" onsubmit="saveMemberForm(event)">
+          <input type="hidden" id="editMemberId">
 
-        <form id="treeMemberForm" onsubmit="handleFormFillSubmit(event)" class="space-y-3">
-          <input type="hidden" id="formMemberId">
-
-          <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">পূর্ণ নাম <span class="text-rose-400">*</span></label>
-            <input type="text" id="fName" required placeholder="যেমন: আলহাজ্ব রফিকুল ইসলাম চৌধুরী" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+          <div class="form-group">
+            <label class="form-label">পূর্ণ নাম *</label>
+            <input type="text" id="formName" class="form-control" placeholder="যেমন: আব্দুর রহমান" required>
           </div>
 
-          <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">পরিচয় / পদবী উপাধি</label>
-            <input type="text" id="fBadge" placeholder="যেমন: মূল পুরুষ / জ্যেষ্ঠ পিতা / প্রপিতামহ" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+          <div class="form-group">
+            <label class="form-label">পদবি / পরিচয়</label>
+            <input type="text" id="formRole" class="form-control" placeholder="যেমন: পারিবারিক প্রধান">
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">লিঙ্গ <span class="text-rose-400">*</span></label>
-              <select id="fGender" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
-                <option value="male">পুরুষ (♂)</option>
-                <option value="female">নারী (♀)</option>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">লিঙ্গ</label>
+              <select id="formGender" class="form-control">
+                <option value="male">পুরুষ (Male)</option>
+                <option value="female">নারী (Female)</option>
               </select>
             </div>
-            <div>
-              <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">জন্ম বছর</label>
-              <input type="text" id="fBirth" placeholder="১৯৪৫" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">মৃত্যু বছর (যদি প্রযোজ্য হয়)</label>
-            <input type="text" id="fDeath" placeholder="২০২১ (জীবিত থাকলে খালি রাখুন)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">ছবি (URL / ফাইল আপলোড)</label>
-            <input type="url" id="fPhotoUrl" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 mb-1.5 focus:outline-none focus:border-amber-400">
-            <input type="file" id="fPhotoFile" accept="image/*" onchange="handleFileUpload(event, 'fPhotoUrl')" class="text-[10px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-slate-800 file:text-amber-300 hover:file:bg-slate-700">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold text-amber-200/90 uppercase mb-1">সংক্ষিপ্ত বিবরণ</label>
-            <textarea id="fBio" rows="2" placeholder="সংক্ষিপ্ত বিবরণ বা পেশা..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400"></textarea>
-          </div>
-
-          <!-- Relationships Panel -->
-          <div class="pt-2 border-t border-amber-500/20 space-y-2">
-            <p class="text-[11px] font-bold text-amber-400 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> পারিবারিক সম্পর্ক</p>
-
-            <div>
-              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">পিতা (Father):</label>
-              <select id="fFatherId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
-                <option value="">-- পিতা নির্বাচন করুন --</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">মাতা (Mother):</label>
-              <select id="fMotherId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
-                <option value="">-- মাতা নির্বাচন করুন --</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">স্বামী/স্ত্রী (Spouse):</label>
-              <select id="fSpouseId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
-                <option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">জীবিত/মৃত</label>
+              <select id="formIsDeceased" class="form-control">
+                <option value="false">জীবিত</option>
+                <option value="true">প্রয়াত</option>
               </select>
             </div>
           </div>
 
-          <div class="pt-2 flex items-center gap-2">
-            <button type="submit" class="flex-1 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow transition">
-              <i class="fa-solid fa-floppy-disk mr-1"></i> সংরক্ষণ করুন
-            </button>
-            <button type="button" onclick="clearFormFill()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl">
-              ক্লিয়ার
-            </button>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">জন্ম সাল</label>
+              <input type="text" id="formBirthYear" class="form-control" placeholder="১৯৫০">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">মৃত্যু সাল (যদি থাকে)</label>
+              <input type="text" id="formDeathYear" class="form-control" placeholder="২০২০">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">পিতা</label>
+            <select id="formFatherId" class="form-control">
+              <option value="">-- কেউ নেই / মূল পূর্বপুরুষ --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">মাতা</label>
+            <select id="formMotherId" class="form-control">
+              <option value="">-- কেউ নেই --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">স্বামী / স্ত্রী</label>
+            <select id="formSpouseId" class="form-control">
+              <option value="">-- কেউ নেই --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ছবি (URL / লিংক)</label>
+            <input type="text" id="formAvatar" class="form-control" placeholder="https://example.com/photo.jpg">
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 20px;">
+            <button type="submit" class="btn btn-gold" style="flex: 1;">সংরক্ষণ করুন</button>
+            <button type="button" class="btn" onclick="resetForm()">রিসেট</button>
           </div>
         </form>
       </div>
 
-      <!-- TAB 3: LAYOUT & DESIGN (লেআউট ও ডিজাইন) -->
-      <div id="tabContent-design" class="hidden flex-1 overflow-y-auto p-4 space-y-5">
-        
-        <!-- Banner Title Input -->
-        <div>
-          <label class="block text-xs font-bold text-amber-200/90 uppercase mb-2">
-            <i class="fa-solid fa-heading text-amber-400 mr-1"></i> বংশতালিকার শিরোনাম
-          </label>
-          <input type="text" id="familyTitleInput" value="চৌধুরী পরিবারের বংশতালিকা" oninput="updateBannerTitle(this.value)" class="w-full bg-slate-900 border border-amber-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-100 font-bold focus:outline-none focus:border-amber-400 mb-2">
-          <input type="text" id="familySubTitleInput" value="প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য ও ধারাবাহিকতা" oninput="updateBannerSubtitle(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 focus:outline-none focus:border-amber-400">
-        </div>
-
-        <!-- Layout Direction Toggle -->
-        <div>
-          <label class="block text-xs font-bold text-amber-200/90 uppercase mb-2">
-            <i class="fa-solid fa-diagram-project text-sky-400 mr-1"></i> লেআউট ওরিয়েন্টেশন
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="setLayoutDirection('vertical')" id="layoutBtn-vertical" class="p-2.5 bg-slate-900 border border-amber-400 rounded-xl text-center text-xs font-bold text-amber-300 transition">
-              <i class="fa-solid fa-arrows-up-down block text-base mb-1"></i> উল্লম্ব (Vertical)
-            </button>
-            <button onclick="setLayoutDirection('horizontal')" id="layoutBtn-horizontal" class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition">
-              <i class="fa-solid fa-arrows-left-right block text-base mb-1"></i> অনুভূমিক (Horizontal)
-            </button>
-          </div>
-        </div>
-
-        <!-- Node Spacing Slider -->
-        <div>
-          <label class="block text-xs font-bold text-amber-200/90 uppercase mb-2 flex justify-between">
-            <span><i class="fa-solid fa-arrows-left-right-to-line text-amber-400 mr-1"></i> কার্ডের মধ্যকার দূরত্ব</span>
-            <span id="spacingValueBadge" class="text-amber-400 font-mono">মাঝারি</span>
-          </label>
-          <input type="range" id="nodeGapSlider" min="20" max="100" step="10" value="48" oninput="updateNodeSpacing(this.value)" class="w-full accent-amber-500 cursor-pointer">
-        </div>
-
-        <!-- Theme Options -->
-        <div>
-          <label class="block text-xs font-bold text-amber-200/90 uppercase mb-2">
-            <i class="fa-solid fa-palette text-amber-400 mr-1"></i> থিম সিলেক্টর
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            
-            <button onclick="setTheme('royal-gold')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-amber-500/80 rounded-xl text-left transition flex items-center gap-2">
-              <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-600 border border-yellow-300"></span>
-              <span class="text-xs font-bold text-amber-200">গোল্ডেন রয়্যাল</span>
-            </button>
-
-            <button onclick="setTheme('slate-gold')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
-              <span class="w-3.5 h-3.5 rounded-full bg-slate-100 border border-amber-500"></span>
-              <span class="text-xs font-bold text-slate-200">অভিজাত লাইট</span>
-            </button>
-
-            <button onclick="setTheme('emerald-gold')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
-              <span class="w-3.5 h-3.5 rounded-full bg-emerald-700 border border-amber-400"></span>
-              <span class="text-xs font-bold text-slate-200">ডার্ক এমারেল্ড</span>
-            </button>
-
-            <button onclick="setTheme('minimal-dark')" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition flex items-center gap-2">
-              <span class="w-3.5 h-3.5 rounded-full bg-sky-400"></span>
-              <span class="text-xs font-bold text-slate-200">সফিস্টিকেটেড</span>
-            </button>
-
-          </div>
-        </div>
-
-        <!-- Avatar Shape Select -->
-        <div>
-          <label class="block text-xs font-bold text-amber-200/90 uppercase mb-2">
-            <i class="fa-solid fa-circle-user text-purple-400 mr-1"></i> ফ্রেমের আকৃতি
-          </label>
-          <select id="avatarFrameSelect" onchange="updateAvatarStyle(this.value)" class="w-full bg-slate-900 border border-amber-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-bold focus:outline-none focus:border-amber-400">
-            <option value="rounded-full">গোল ফ্রেম (Circle)</option>
-            <option value="rounded-2xl">স্মুথ চারকোনা (Rounded)</option>
-            <option value="rounded-none">ক্লাসিক চারকোনা (Square)</option>
+      <!-- Tab 3: Layout & Theme Settings -->
+      <div id="settingsTab" class="tab-content">
+        <div class="form-group">
+          <label class="form-label">বংশতালিকা ওরিয়েন্টেশন (দিক)</label>
+          <select id="settingOrientation" class="form-control" onchange="updateSettings()">
+            <option value="vertical">ভার্টিক্যাল (উপর থেকে নিচে)</option>
+            <option value="horizontal">হরিজন্টাল (বাম থেকে ডানে)</option>
           </select>
         </div>
 
-      </div>
-
-    </aside>
-
-    <!-- CANVAS VIEWPORT -->
-    <main id="viewport" class="flex-1 relative overflow-hidden bg-slate-950 canvas-theme-container theme-royal-gold flex items-center justify-center canvas-grab">
-      
-      <!-- Transform Scale Container -->
-      <div id="canvasViewport" class="viewport-canvas inline-block p-16">
-        
-        <!-- Target Content Render Box -->
-        <div id="treeContainer" class="relative inline-block min-w-[900px] p-12 rounded-3xl transition-all">
-          
-          <!-- Banner Title -->
-          <div class="text-center mb-12">
-            <h2 id="displayBannerTitle" class="tree-title text-3xl sm:text-5xl font-black tracking-tight drop-shadow-md">চৌধুরী পরিবারের বংশতালিকা</h2>
-            <p id="displayBannerSub" class="text-xs uppercase tracking-widest font-bold opacity-85 mt-2 text-amber-200/80">প্রজন্ম থেকে প্রজন্মে পারিবারিক ঐতিহ্য ও ধারাবাহিকতা</p>
-            <div class="w-48 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-3"></div>
-          </div>
-
-          <!-- SVG Connecting Lines Overlay -->
-          <svg id="svgConnectors" class="absolute inset-0 w-full h-full pointer-events-none z-0"></svg>
-
-          <!-- Tree Branch Render Node -->
-          <div id="treeBranchRoot" class="relative z-10 flex justify-center"></div>
-
+        <div class="form-group">
+          <label class="form-label">কার্ডের ব্যবধান (কার্ড স্পেসিং)</label>
+          <input type="range" id="settingSpacing" min="20" max="100" value="40" class="zoom-slider" style="width: 100%;" onchange="updateSettings()">
         </div>
 
+        <div class="form-group">
+          <label class="form-label">থিম থিম নির্বাচন</label>
+          <select id="settingTheme" class="form-control" onchange="updateSettings()">
+            <option value="royal">গোল্ডেন রয়্যাল (Royal Gold & Obsidian)</option>
+            <option value="emerald">ডার্ক এমারেল্ড (Dark Emerald Gold)</option>
+            <option value="slate">অভিজাত ক্লাসিক (Slate Gold Light)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dynamic Canvas -->
+    <div class="canvas-viewport" id="viewport">
+      <div class="tree-container" id="treeContainer">
+        <!-- SVG Vector Layer for Relationship Connectors -->
+        <svg class="tree-svg-layer" id="svgLayer">
+          <defs>
+            <!-- Spouse Connection Gradient -->
+            <linearGradient id="spouseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#FF4D6D" />
+              <stop offset="50%" stop-color="#FFD700" />
+              <stop offset="100%" stop-color="#FF4D6D" />
+            </linearGradient>
+
+            <!-- Parent Line Gradient -->
+            <linearGradient id="parentGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#D4AF37" />
+              <stop offset="100%" stop-color="#10B981" />
+            </linearGradient>
+
+            <!-- Sibling Line Gradient -->
+            <linearGradient id="siblingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#38BDF8" />
+              <stop offset="50%" stop-color="#D4AF37" />
+              <stop offset="100%" stop-color="#38BDF8" />
+            </linearGradient>
+
+            <!-- Alternate Multi-Line Gradient -->
+            <linearGradient id="altGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#A855F7" />
+              <stop offset="100%" stop-color="#FF9F1C" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- Dynamic Card Nodes Layer -->
+        <div class="tree-node-layer" id="nodeLayer"></div>
       </div>
 
-    </main>
-
-    <!-- FLOATING ZOOM CONTROLS -->
-    <div class="absolute bottom-6 right-6 z-30 flex items-center gap-2 bg-slate-950/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-amber-500/40 shadow-2xl">
-      <button onclick="zoomOut()" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition" title="জুম আউট">
-        <i class="fa-solid fa-minus text-xs"></i>
-      </button>
-
-      <input type="range" id="zoomRangeSlider" min="0.1" max="3.0" step="0.05" value="1.0" oninput="handleZoomSlider(this.value)" class="w-20 accent-amber-500 cursor-pointer">
-
-      <button onclick="zoomIn()" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center transition" title="জুম ইন">
-        <i class="fa-solid fa-plus text-xs"></i>
-      </button>
-
-      <span id="zoomPercentBadge" class="px-2 py-1 bg-slate-900 text-amber-400 font-mono text-xs font-bold rounded-lg border border-amber-500/30 min-w-[50px] text-center">১০০%</span>
-
-      <div class="h-5 w-px bg-slate-800 mx-0.5"></div>
-
-      <button onclick="resetZoom()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold rounded-xl border border-amber-500/30 transition flex items-center gap-1.5">
-        <i class="fa-solid fa-expand text-amber-400"></i>
-        <span>ফিট ভিউ</span>
-      </button>
+      <!-- Floating Zoom Navigation Bar -->
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomDelta(-0.15)" title="জুম আউট">-</button>
+        <span class="zoom-badge" id="zoomBadge">100%</span>
+        <button class="zoom-btn" onclick="zoomDelta(0.15)" title="জুম ইন">+</button>
+        <input type="range" min="0.2" max="2" step="0.05" value="1" id="zoomSlider" class="zoom-slider" oninput="setZoom(this.value)">
+        <button class="btn" style="padding: 4px 10px; font-size: 12px;" onclick="resetView()">ফিট ভিউ</button>
+      </div>
     </div>
 
   </div>
 
-  <!-- EXPORT STUDIO MODAL -->
-  <div id="exportModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5">
-      <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
-        <h3 class="text-base font-bold text-amber-200 flex items-center gap-2">
-          <i class="fa-solid fa-file-export text-amber-400"></i> এক্সপোর্ট ও প্রিন্ট স্টুডিও
-        </h3>
-        <button onclick="closeExportModal()" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+  <!-- Export Selection Modal -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">সোশ্যাল মিডিয়া ও প্রিন্ট এক্সপোর্ট</div>
+        <button class="modal-close" onclick="closeExportModal()">✕</button>
       </div>
 
-      <!-- Presets -->
-      <div>
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">সোশ্যাল মিডিয়া সাইজ নির্বাচন করুন</label>
-        <div class="grid grid-cols-2 gap-2">
-          
-          <button onclick="setExportFrame('sq')" id="preset-sq" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-amber-500/80 rounded-xl text-left transition flex items-center gap-3">
-            <i class="fa-brands fa-instagram text-xl text-rose-400"></i>
-            <div>
-              <p class="text-xs font-bold text-slate-200">স্কয়ার (1:1)</p>
-              <p class="text-[10px] text-slate-400">ইনস্টাগ্রাম ও ফেসবুক পোস্ট</p>
-            </div>
-          </button>
-
-          <button onclick="setExportFrame('port')" id="preset-port" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
-            <i class="fa-brands fa-facebook text-xl text-blue-400"></i>
-            <div>
-              <p class="text-xs font-bold text-slate-200">পোর্ট্রেট (4:5)</p>
-              <p class="text-[10px] text-slate-400">ফেসবুক ফিড ও লিঙ্কডইন</p>
-            </div>
-          </button>
-
-          <button onclick="setExportFrame('story')" id="preset-story" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
-            <i class="fa-solid fa-mobile-screen text-xl text-purple-400"></i>
-            <div>
-              <p class="text-xs font-bold text-slate-200">স্টোরি / রিলস (9:16)</p>
-              <p class="text-[10px] text-slate-400">মোবাইল ফুলস্ক্রিন ভিউ</p>
-            </div>
-          </button>
-
-          <button onclick="setExportFrame('land')" id="preset-land" class="export-preset-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left transition flex items-center gap-3">
-            <i class="fa-brands fa-x-twitter text-xl text-sky-400"></i>
-            <div>
-              <p class="text-xs font-bold text-slate-200">ল্যান্ডস্কেপ (16:9)</p>
-              <p class="text-[10px] text-slate-400">ওয়েব ব্যানার ও টুইটার</p>
-            </div>
-          </button>
-
+      <div class="export-grid">
+        <div class="export-option selected" id="opt-insta" onclick="selectExportPreset('insta')">
+          <div class="export-icon">📸</div>
+          <div class="export-label">ইনস্টাগ্রাম / স্কয়ার</div>
+          <div class="export-sub">1:1 অনুপাত (PNG)</div>
+        </div>
+        <div class="export-option" id="opt-story" onclick="selectExportPreset('story')">
+          <div class="export-icon">📱</div>
+          <div class="export-label">স্টোরি / রিলস</div>
+          <div class="export-sub">9:16 অনুপাত (PNG)</div>
+        </div>
+        <div class="export-option" id="opt-fb" onclick="selectExportPreset('fb')">
+          <div class="export-icon">📘</div>
+          <div class="export-label">ফেসবুক পোস্ট</div>
+          <div class="export-sub">4:5 অনুপাত (JPG)</div>
+        </div>
+        <div class="export-option" id="opt-pdf" onclick="selectExportPreset('pdf')">
+          <div class="export-icon">🖨️</div>
+          <div class="export-label">প্রিন্ট কপি (PDF)</div>
+          <div class="export-sub">A4 প্রিন্ট ফরম্যাট</div>
         </div>
       </div>
 
-      <!-- Format Download -->
-      <div class="space-y-2 pt-2 border-t border-amber-500/20">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ফাইল ফরম্যাট নির্বাচন করুন</label>
-        <div class="grid grid-cols-3 gap-3">
-          <button onclick="executeExport('png')" class="py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1 border border-yellow-300">
-            <i class="fa-solid fa-file-image text-lg"></i> PNG চিত্র
-          </button>
-          <button onclick="executeExport('jpeg')" class="py-3 bg-sky-600 hover:bg-sky-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
-            <i class="fa-solid fa-image text-lg"></i> JPG চিত্র
-          </button>
-          <button onclick="executeExport('pdf')" class="py-3 bg-amber-600 hover:bg-amber-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition shadow flex flex-col items-center gap-1">
-            <i class="fa-solid fa-file-pdf text-lg"></i> প্রিন্ট PDF
-          </button>
-        </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn" onclick="closeExportModal()">বাতিল</button>
+        <button class="btn btn-gold" onclick="executeExport()">ডাউনলোড করুন</button>
       </div>
     </div>
   </div>
 
+  <!-- Hidden File Input for JSON Restore -->
+  <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleJSONFileSelect(event)">
 
-  <!-- APPLICATION LOGIC -->
   <script>
-    // --- PERSISTENT STATE ---
-    const STORAGE_KEY = 'familyTree_app_data';
-    
-    let familyData = [];
-    let currentLayout = 'vertical';
-    let nodeGapSpacing = 48;
-    let selectedExportPreset = 'sq';
-    let avatarStyleClass = 'rounded-full';
-
-    // Viewport Navigation State
-    let currentZoom = 1.0;
-    let panX = 0, panY = 0;
-    let isPanning = false, startX = 0, startY = 0;
-
-    // Rich 3-Generation Initial Bengali Dataset
-    const initialDefaultData = [
-      {
-        id: "1",
-        name: "আলহাজ্ব চৌধুরী আব্দুর রহমান",
-        badge: "মূল পুরুষ (প্রপিতামহ)",
-        gender: "male",
-        birth: "১৯২৫",
-        death: "১৯৯৮",
-        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
-        bio: "সমাজসেবক ও বিশিষ্ট শিক্ষানুরাগী",
-        spouseId: "2",
-        fatherId: null,
-        motherId: null,
-        childrenIds: ["3", "4"]
-      },
-      {
-        id: "2",
-        name: "বেগম রাহেলা রহমান",
-        badge: "প্রপিতামহী",
-        gender: "female",
-        birth: "১৯৩২",
-        death: "২০১০",
-        photo: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&auto=format&fit=crop&q=80",
-        bio: "গৃহিণী ও রত্নগর্ভা মা",
-        spouseId: "1",
-        fatherId: null,
-        motherId: null,
-        childrenIds: ["3", "4"]
-      },
-      {
-        id: "3",
-        name: "প্রকৌশলী রফিকুল ইসলাম চৌধুরী",
-        badge: "জ্যেষ্ঠ পুত্র",
-        gender: "male",
-        birth: "১৯৫৬",
-        death: "জীবিত",
-        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
-        bio: "সাবেক প্রধান প্রকৌশলী",
-        spouseId: "5",
-        fatherId: "1",
-        motherId: "2",
-        childrenIds: ["6", "7"]
-      },
-      {
-        id: "4",
-        name: "অধ্যাপিকা নাসরীন আক্তার চৌধুরী",
-        badge: "কন্যা",
-        gender: "female",
-        birth: "১৯৬২",
-        death: "জীবিত",
-        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
-        bio: "অধ্যাপিকা, ঢাকা বিশ্ববিদ্যালয়",
-        spouseId: null,
-        fatherId: "1",
-        motherId: "2",
-        childrenIds: []
-      },
-      {
-        id: "5",
-        name: "মেহেরুন্নেসা চৌধুরী",
-        badge: "পুত্রবধূ",
-        gender: "female",
-        birth: "১৯৬২",
-        death: "জীবিত",
-        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop&q=80",
-        bio: "চিত্রশিল্পী ও সমাজকর্মী",
-        spouseId: "3",
-        fatherId: null,
-        motherId: null,
-        childrenIds: ["6", "7"]
-      },
-      {
-        id: "6",
-        name: "তানভীর আহমেদ চৌধুরী",
-        badge: "পৌত্র (নাতি)",
-        gender: "male",
-        birth: "১৯৯০",
-        death: "জীবিত",
-        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
-        bio: "সফটওয়্যার আর্কিটেক্ট",
-        spouseId: null,
-        fatherId: "3",
-        motherId: "5",
-        childrenIds: []
-      },
-      {
-        id: "7",
-        name: "ডাঃ নুসরাত জাহান চৌধুরী",
-        badge: "পৌত্রী (নাতনি)",
-        gender: "female",
-        birth: "১৯৯৫",
-        death: "জীবিত",
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-        bio: "মেডিকেল অফিসার",
-        spouseId: null,
-        fatherId: "3",
-        motherId: "5",
-        childrenIds: []
-      }
+    /* Global Initial State & Sample Family Tree Data */
+    let familyData = [
+      { id: '1', name: 'আব্দুল জাব্বার', role: 'বংশ প্রতিষ্ঠাতা', gender: 'male', birthYear: '১৯৩২', deathYear: '২০১০', isDeceased: true, fatherId: '', motherId: '', spouseId: '2', avatar: '' },
+      { id: '2', name: 'রাবেয়া খাতুন', role: 'সহধর্মিণী', gender: 'female', birthYear: '১৯৩৮', deathYear: '২০১৮', isDeceased: true, fatherId: '', motherId: '', spouseId: '1', avatar: '' },
+      { id: '3', name: 'মোঃ রফিকুল ইসলাম', role: 'জ্যেষ্ঠ পুত্র', gender: 'male', birthYear: '১৯৬২', deathYear: '', isDeceased: false, fatherId: '1', motherId: '2', spouseId: '4', avatar: '' },
+      { id: '4', name: 'সেলিনা পারভীন', role: 'পুত্রবধূ', gender: 'female', birthYear: '১৯৬৮', deathYear: '', isDeceased: false, fatherId: '', motherId: '', spouseId: '3', avatar: '' },
+      { id: '5', name: 'নাসরিন সুলতানা', role: 'কন্যা', gender: 'female', birthYear: '১৯৬৬', deathYear: '', isDeceased: false, fatherId: '1', motherId: '2', spouseId: '', avatar: '' },
+      { id: '6', name: 'মোঃ তানভীর হাসান', role: 'পৌত্র', gender: 'male', birthYear: '১৯৯২', deathYear: '', isDeceased: false, fatherId: '3', motherId: '4', spouseId: '', avatar: '' },
+      { id: '7', name: 'নুসরাত জাহান', role: 'পৌত্রী', gender: 'female', birthYear: '১৯৯৬', deathYear: '', isDeceased: false, fatherId: '3', motherId: '4', spouseId: '', avatar: '' }
     ];
 
-    // Helper: Bengali Numerals
-    function toBengaliNumerals(str) {
-      if (str === null || str === undefined) return '';
-      const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-      return str.toString().replace(/\d/g, (x) => bnDigits[x]);
-    }
+    let treeSettings = {
+      orientation: 'vertical',
+      spacing: 40,
+      theme: 'royal'
+    };
 
-    // --- APPLICATION INITIALIZATION ---
+    let selectedExportPreset = 'insta';
+    let currentScale = 1;
+    let panX = 100;
+    let panY = 100;
+    let isPanning = false;
+    let startX = 0, startY = 0;
+
+    // Canvas elements
+    const viewport = document.getElementById('viewport');
+    const treeContainer = document.getElementById('treeContainer');
+    const svgLayer = document.getElementById('svgLayer');
+    const nodeLayer = document.getElementById('nodeLayer');
+
+    /* Initial Load */
     window.addEventListener('DOMContentLoaded', () => {
-      loadDataFromStorage();
-      setupMacTouchpadControls();
-      populateFormSelectors();
-      renderMemberList();
-      renderTree();
+      loadSavedStorage();
+      setupMacTrackpadNavigation();
+      renderAll();
+      resetView();
     });
 
-    // Storage Engines
-    function loadDataFromStorage() {
-      const savedRaw = localStorage.getItem(STORAGE_KEY);
-      if (savedRaw) {
-        try {
-          const parsed = JSON.parse(savedRaw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            familyData = parsed;
-          } else {
-            familyData = JSON.parse(JSON.stringify(initialDefaultData));
+    /* Persistence Engine */
+    function loadSavedStorage() {
+      const savedTree = localStorage.getItem('familyTree_reorder_data');
+      if (savedTree) {
+        try { familyData = JSON.parse(savedTree); } catch (e) { console.error(e); }
+      }
+    }
+
+    function saveStorage() {
+      localStorage.setItem('familyTree_reorder_data', JSON.stringify(familyData));
+    }
+
+    /* Rendering Core Engine */
+    function renderAll() {
+      renderNodeTree();
+      renderMemberDragList();
+      populateFormDropdowns();
+    }
+
+    function renderNodeTree() {
+      nodeLayer.innerHTML = '';
+      
+      // Clean up dynamic SVGs except <defs>
+      const defs = svgLayer.querySelector('defs').outerHTML;
+      svgLayer.innerHTML = defs;
+
+      if (familyData.length === 0) return;
+
+      const cardWidth = 180;
+      const cardHeight = 110;
+      const levelGap = treeSettings.orientation === 'vertical' ? 140 : 220;
+      const siblingGap = treeSettings.spacing;
+
+      // Group nodes by generational levels
+      const levels = calculateGenerationalLevels();
+      const levelKeys = Object.keys(levels).sort((a, b) => a - b);
+
+      let currentY = 100;
+      const cardPositions = {};
+
+      levelKeys.forEach(lvl => {
+        const membersInLevel = levels[lvl];
+        let currentX = 100;
+
+        membersInLevel.forEach(member => {
+          cardPositions[member.id] = {
+            x: currentX,
+            y: currentY,
+            width: cardWidth,
+            height: cardHeight
+          };
+
+          // Render DOM Node Card
+          const card = document.createElement('div');
+          card.className = `family-card ${member.gender}`;
+          card.style.left = `${currentX}px`;
+          card.style.top = `${currentY}px`;
+          card.onclick = () => editMember(member.id);
+
+          const defaultAvatar = member.gender === 'female' 
+            ? 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png' 
+            : 'https://cdn-icons-png.flaticon.com/512/4140/4140037.png';
+
+          const avatarSrc = member.avatar || defaultAvatar;
+
+          card.innerHTML = `
+            <div class="card-avatar-wrap">
+              <img src="${avatarSrc}" class="card-avatar" alt="${member.name}">
+              <div class="gender-badge ${member.gender}">${member.gender === 'male' ? '♂' : '♀'}</div>
+            </div>
+            <div class="card-name" title="${member.name}">${member.name}</div>
+            <div class="card-role">${member.role || (member.gender === 'male' ? 'সদস্য' : 'সদস্যা')}</div>
+            <div class="card-dates">${member.birthYear || '---'} - ${member.isDeceased ? (member.deathYear || 'প্রয়াত') : 'জীবিত'}</div>
+          `;
+
+          nodeLayer.appendChild(card);
+
+          currentX += cardWidth + siblingGap;
+        });
+
+        currentY += cardHeight + levelGap;
+      });
+
+      // Render Dynamic Multi-Color Lines
+      renderRelationshipConnectors(cardPositions);
+    }
+
+    /* Calculate Levels */
+    function calculateGenerationalLevels() {
+      const levels = {};
+      const visited = new Set();
+
+      function getDepth(id, currentDepth = 0) {
+        if (currentDepth > 15) return 0; // Prevent cycle loops
+        const m = familyData.find(x => x.id === id);
+        if (!m || (!m.fatherId && !m.motherId)) return currentDepth;
+        const fatherDepth = m.fatherId ? getDepth(m.fatherId, currentDepth + 1) : 0;
+        const motherDepth = m.motherId ? getDepth(m.motherId, currentDepth + 1) : 0;
+        return Math.max(fatherDepth, motherDepth);
+      }
+
+      familyData.forEach(m => {
+        const lvl = getDepth(m.id);
+        if (!levels[lvl]) levels[lvl] = [];
+        levels[lvl].push(m);
+      });
+
+      return levels;
+    }
+
+    /* Draw Smart Non-Overlapping Color-Coded Lines */
+    function renderRelationshipConnectors(positions) {
+      const drawnSpouseUnions = new Set();
+
+      familyData.forEach(m => {
+        const mPos = positions[m.id];
+        if (!mPos) return;
+
+        // 1. Spouse Connection Line (Golden Rose with Heart)
+        if (m.spouseId && positions[m.spouseId]) {
+          const spouseKey = [m.id, m.spouseId].sort().join('-');
+          if (!drawnSpouseUnions.has(spouseKey)) {
+            drawnSpouseUnions.add(spouseKey);
+            const sPos = positions[m.spouseId];
+
+            const startX = mPos.x + mPos.width;
+            const startY = mPos.y + (mPos.height / 2);
+            const endX = sPos.x;
+            const endY = sPos.y + (sPos.height / 2);
+
+            // Draw Spouse Line
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
+            path.setAttribute('class', 'connector-line line-spouse');
+            svgLayer.appendChild(path);
+
+            // Draw Glowing Heart Indicator at Center
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            const heart = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            heart.setAttribute('x', midX);
+            heart.setAttribute('y', midY + 5);
+            heart.setAttribute('text-anchor', 'middle');
+            heart.setAttribute('font-size', '14px');
+            heart.setAttribute('class', 'spouse-heart-marker');
+            heart.textContent = '❤️';
+            svgLayer.appendChild(heart);
           }
-        } catch(e) {
-          familyData = JSON.parse(JSON.stringify(initialDefaultData));
         }
-      } else {
-        familyData = JSON.parse(JSON.stringify(initialDefaultData));
-        saveDataToStorage();
+
+        // 2. Parent-Child Lineage (Multi-color Step Paths)
+        if (m.fatherId || m.motherId) {
+          const fPos = m.fatherId ? positions[m.fatherId] : null;
+          const mPosParent = m.motherId ? positions[m.motherId] : null;
+
+          let sourceX, sourceY;
+
+          if (fPos && mPosParent) {
+            // Source from parent union center
+            sourceX = (fPos.x + mPosParent.x + fPos.width) / 2;
+            sourceY = fPos.y + fPos.height;
+          } else if (fPos) {
+            sourceX = fPos.x + (fPos.width / 2);
+            sourceY = fPos.y + fPos.height;
+          } else if (mPosParent) {
+            sourceX = mPosParent.x + (mPosParent.width / 2);
+            sourceY = mPosParent.y + mPosParent.height;
+          }
+
+          const targetX = mPos.x + (mPos.width / 2);
+          const targetY = mPos.y;
+
+          const midY = sourceY + ((targetY - sourceY) / 2);
+
+          // Step routing to eliminate overlapping lines
+          const d = `M ${sourceX} ${sourceY} V ${midY} H ${targetX} V ${targetY}`;
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', d);
+          path.setAttribute('class', 'connector-line line-parent');
+          svgLayer.appendChild(path);
+        }
+      });
+    }
+
+    /* Sidebar Member List Drag & Drop Reordering */
+    function renderMemberDragList() {
+      const listContainer = document.getElementById('memberDragList');
+      listContainer.innerHTML = '';
+
+      familyData.forEach((member, index) => {
+        const item = document.createElement('div');
+        item.className = 'member-list-item';
+        item.draggable = true;
+        item.dataset.index = index;
+
+        const defaultAvatar = member.gender === 'female' 
+          ? 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png' 
+          : 'https://cdn-icons-png.flaticon.com/512/4140/4140037.png';
+
+        item.innerHTML = `
+          <div class="member-drag-handle">⋮⋮</div>
+          <img src="${member.avatar || defaultAvatar}" class="member-thumb" alt="">
+          <div class="member-info">
+            <div class="member-name">${member.name}</div>
+            <div class="member-sub">${member.role || (member.gender === 'male' ? 'পুরুষ' : 'নারী')} • ${member.birthYear || '---'}</div>
+          </div>
+          <div class="member-actions">
+            <button class="icon-btn" onclick="focusMemberOnCanvas('${member.id}')" title="ক্যানভাসে দেখুন">🎯</button>
+            <button class="icon-btn" onclick="editMember('${member.id}')" title="এডিট">✏️</button>
+            <button class="icon-btn" onclick="deleteMember('${member.id}')" title="মুছে ফেলুন">🗑️</button>
+          </div>
+        `;
+
+        // Attach Drag Events for Reordering
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+
+        listContainer.appendChild(item);
+      });
+    }
+
+    let dragSrcIndex = null;
+
+    function handleDragStart(e) {
+      dragSrcIndex = this.dataset.index;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDrop(e) {
+      e.stopPropagation();
+      const targetIndex = this.dataset.index;
+      if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+        // Reorder array
+        const movedItem = familyData.splice(dragSrcIndex, 1)[0];
+        familyData.splice(targetIndex, 0, movedItem);
+
+        saveStorage();
+        renderAll();
       }
+      return false;
     }
 
-    function saveDataToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(familyData));
-      populateFormSelectors();
-      renderMemberList();
-      renderTree();
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.member-list-item').forEach(el => el.classList.remove('dragging'));
     }
 
-    function confirmResetData() {
-      if (confirm("আপনি কি নিশ্চিত যে সমস্ত তথ্য মুছে প্রাথমিক নমুনা বংশতালিকায় ফিরে যেতে চান?")) {
-        familyData = JSON.parse(JSON.stringify(initialDefaultData));
-        saveDataToStorage();
-      }
+    /* Filter Search */
+    function filterMemberList() {
+      const query = document.getElementById('memberSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.member-list-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? 'flex' : 'none';
+      });
     }
 
-    // --- MAC TOUCHPAD & ZOOM CONTROL ENGINE ---
-    function setupMacTouchpadControls() {
-      const viewport = document.getElementById('viewport');
+    /* Focus Card Centering Animation */
+    function focusMemberOnCanvas(id) {
+      const node = [...nodeLayer.children].find(el => el.onclick.toString().includes(id));
+      if (!node) return;
 
-      viewport.addEventListener('wheel', (e) => {
-        e.preventDefault();
+      const rect = node.getBoundingClientRect();
+      const vpRect = viewport.getBoundingClientRect();
 
-        if (e.ctrlKey) {
-          const rect = viewport.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
+      panX = (vpRect.width / 2) - (parseInt(node.style.left) * currentScale) - 90;
+      panY = (vpRect.height / 2) - (parseInt(node.style.top) * currentScale) - 55;
 
-          const zoomFactor = Math.pow(0.992, e.deltaY);
-          const newZoom = Math.min(Math.max(0.1, currentZoom * zoomFactor), 3.0);
+      updateTransform();
+    }
 
-          panX = mouseX - (mouseX - panX) * (newZoom / currentZoom);
-          panY = mouseY - (mouseY - panY) * (newZoom / currentZoom);
-          currentZoom = newZoom;
+    /* Populate Select Dropdowns */
+    function populateFormDropdowns() {
+      const fatherSelect = document.getElementById('formFatherId');
+      const motherSelect = document.getElementById('formMotherId');
+      const spouseSelect = document.getElementById('formSpouseId');
+
+      const currentEditId = document.getElementById('editMemberId').value;
+
+      fatherSelect.innerHTML = '<option value="">-- কেউ নেই / মূল পূর্বপুরুষ --</option>';
+      motherSelect.innerHTML = '<option value="">-- কেউ নেই --</option>';
+      spouseSelect.innerHTML = '<option value="">-- কেউ নেই --</option>';
+
+      familyData.forEach(m => {
+        if (m.id === currentEditId) return; // Prevent self-referencing
+
+        if (m.gender === 'male') {
+          fatherSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
         } else {
-          panX -= e.deltaX;
-          panY -= e.deltaY;
+          motherSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
         }
+        spouseSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+      });
+    }
 
-        applyTransform();
-      }, { passive: false });
+    /* Form Save/Edit/Delete Handlers */
+    function saveMemberForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('editMemberId').value || Date.now().toString();
 
-      // Mouse Panning
+      const memberObj = {
+        id,
+        name: document.getElementById('formName').value.trim(),
+        role: document.getElementById('formRole').value.trim(),
+        gender: document.getElementById('formGender').value,
+        isDeceased: document.getElementById('formIsDeceased').value === 'true',
+        birthYear: document.getElementById('formBirthYear').value.trim(),
+        deathYear: document.getElementById('formDeathYear').value.trim(),
+        fatherId: document.getElementById('formFatherId').value,
+        motherId: document.getElementById('formMotherId').value,
+        spouseId: document.getElementById('formSpouseId').value,
+        avatar: document.getElementById('formAvatar').value.trim()
+      };
+
+      const existingIndex = familyData.findIndex(x => x.id === id);
+      if (existingIndex > -1) {
+        familyData[existingIndex] = memberObj;
+      } else {
+        familyData.push(memberObj);
+      }
+
+      // Sync Bidirectional Spouse
+      if (memberObj.spouseId) {
+        const spouse = familyData.find(x => x.id === memberObj.spouseId);
+        if (spouse) spouse.spouseId = id;
+      }
+
+      saveStorage();
+      renderAll();
+      resetForm();
+      switchTab('listTab');
+    }
+
+    function editMember(id) {
+      const m = familyData.find(x => x.id === id);
+      if (!m) return;
+
+      document.getElementById('editMemberId').value = m.id;
+      document.getElementById('formName').value = m.name;
+      document.getElementById('formRole').value = m.role || '';
+      document.getElementById('formGender').value = m.gender;
+      document.getElementById('formIsDeceased').value = m.isDeceased ? 'true' : 'false';
+      document.getElementById('formBirthYear').value = m.birthYear || '';
+      document.getElementById('formDeathYear').value = m.deathYear || '';
+      document.getElementById('formAvatar').value = m.avatar || '';
+
+      populateFormDropdowns();
+      document.getElementById('formFatherId').value = m.fatherId || '';
+      document.getElementById('formMotherId').value = m.motherId || '';
+      document.getElementById('formSpouseId').value = m.spouseId || '';
+
+      switchTab('formTab');
+    }
+
+    function deleteMember(id) {
+      if (confirm('আপনি কি নিশ্চিত যে এই সদস্যকে বংশতালিকা থেকে মুছে ফেলতে চান?')) {
+        familyData = familyData.filter(x => x.id !== id);
+        // Clear references
+        familyData.forEach(m => {
+          if (m.fatherId === id) m.fatherId = '';
+          if (m.motherId === id) m.motherId = '';
+          if (m.spouseId === id) m.spouseId = '';
+        });
+        saveStorage();
+        renderAll();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('memberForm').reset();
+      document.getElementById('editMemberId').value = '';
+      populateFormDropdowns();
+    }
+
+    /* Tab Switcher */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabId === 'listTab') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      if (tabId === 'formTab') document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      if (tabId === 'settingsTab') document.querySelectorAll('.tab-btn')[2].classList.add('active');
+
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    /* Settings Update */
+    function updateSettings() {
+      treeSettings.orientation = document.getElementById('settingOrientation').value;
+      treeSettings.spacing = parseInt(document.getElementById('settingSpacing').value);
+      treeSettings.theme = document.getElementById('settingTheme').value;
+      renderNodeTree();
+    }
+
+    /* Mac Trackpad Smooth Navigation Engine */
+    function setupMacTrackpadNavigation() {
+      // Smooth Pan
       viewport.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.tree-card') || e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
+        if (e.target.closest('.family-card') || e.target.closest('.zoom-controls')) return;
         isPanning = true;
         startX = e.clientX - panX;
         startY = e.clientY - panY;
-        viewport.classList.replace('canvas-grab', 'canvas-panning');
       });
 
       window.addEventListener('mousemove', (e) => {
         if (!isPanning) return;
         panX = e.clientX - startX;
         panY = e.clientY - startY;
-        applyTransform();
+        updateTransform();
       });
 
-      window.addEventListener('mouseup', () => {
-        isPanning = false;
-        viewport.classList.replace('canvas-panning', 'canvas-grab');
-      });
-    }
+      window.addEventListener('mouseup', () => isPanning = false);
 
-    function applyTransform() {
-      const canvas = document.getElementById('canvasViewport');
-      canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
-      
-      document.getElementById('zoomRangeSlider').value = currentZoom;
-      document.getElementById('zoomPercentBadge').innerText = toBengaliNumerals(Math.round(currentZoom * 100)) + '%';
-    }
+      // Trackpad 2-finger scroll and Pinch-to-zoom
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
 
-    function handleZoomSlider(val) {
-      currentZoom = parseFloat(val);
-      applyTransform();
-    }
-
-    function zoomIn() {
-      currentZoom = Math.min(3.0, currentZoom + 0.15);
-      applyTransform();
-    }
-
-    function zoomOut() {
-      currentZoom = Math.max(0.1, currentZoom - 0.15);
-      applyTransform();
-    }
-
-    function resetZoom() {
-      currentZoom = 1.0;
-      panX = 0;
-      panY = 0;
-      applyTransform();
-    }
-
-    // --- SIDEBAR TAB CONTROLLER ---
-    function switchSidebarTab(tabKey) {
-      ['members', 'form', 'design'].forEach(k => {
-        const btn = document.getElementById(`tabBtn-${k}`);
-        btn.classList.remove('text-amber-300', 'bg-slate-800', 'border', 'border-amber-500/30');
-        btn.classList.add('text-slate-400');
-        document.getElementById(`tabContent-${k}`).classList.add('hidden');
-      });
-
-      const activeBtn = document.getElementById(`tabBtn-${tabKey}`);
-      activeBtn.classList.add('text-amber-300', 'bg-slate-800', 'border', 'border-amber-500/30');
-      activeBtn.classList.remove('text-slate-400');
-      document.getElementById(`tabContent-${tabKey}`).classList.remove('hidden');
-    }
-
-    // --- MEMBER LIST & CENTERING FOCUS ---
-    function renderMemberList() {
-      const listContainer = document.getElementById('sidebarMemberList');
-      const searchQuery = (document.getElementById('memberSearchInput').value || '').toLowerCase();
-      
-      listContainer.innerHTML = '';
-
-      const filtered = familyData.filter(m => 
-        m.name.toLowerCase().includes(searchQuery) || 
-        (m.badge && m.badge.toLowerCase().includes(searchQuery))
-      );
-
-      document.getElementById('memberCountBadge').innerText = `${toBengaliNumerals(familyData.length)} জন`;
-
-      if (filtered.length === 0) {
-        listContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">কোনো সদস্য পাওয়া যায়নি</p>`;
-        return;
-      }
-
-      filtered.forEach(m => {
-        const item = document.createElement('div');
-        item.className = 'p-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/20 hover:border-amber-500/50 rounded-xl flex items-center justify-between cursor-pointer transition group';
-        
-        const avatar = m.photo
-          ? `<img src="${m.photo}" class="w-8 h-8 rounded-full object-cover border border-amber-400/80">`
-          : `<div class="w-8 h-8 rounded-full bg-slate-800 border border-amber-500/30 flex items-center justify-center text-xs text-amber-400"><i class="fa-solid fa-user"></i></div>`;
-
-        const genderTag = m.gender === 'female' 
-          ? `<span class="text-[10px] text-pink-400 font-bold">♀ নারী</span>`
-          : `<span class="text-[10px] text-sky-400 font-bold">♂ পুরুষ</span>`;
-
-        item.onclick = () => focusMemberNode(m.id);
-
-        item.innerHTML = `
-          <div class="flex items-center space-x-2.5 overflow-hidden">
-            ${avatar}
-            <div class="overflow-hidden">
-              <h5 class="text-xs font-bold text-amber-100 truncate group-hover:text-amber-400 transition">${m.name}</h5>
-              <p class="text-[10px] text-slate-400 truncate">${m.badge || 'পরিবার সদস্য'} • ${genderTag}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
-            <button onclick="event.stopPropagation(); prepareAddChildForm('${m.id}')" class="p-1 text-amber-400 hover:bg-amber-950 rounded" title="সন্তান যোগ"><i class="fa-solid fa-plus text-[10px]"></i></button>
-            <button onclick="event.stopPropagation(); populateFormForEdit('${m.id}')" class="p-1 text-sky-400 hover:bg-sky-950 rounded" title="সম্পাদন"><i class="fa-solid fa-pen text-[10px]"></i></button>
-            <button onclick="event.stopPropagation(); deleteMember('${m.id}')" class="p-1 text-rose-400 hover:bg-rose-950 rounded" title="মুছুন"><i class="fa-solid fa-trash text-[10px]"></i></button>
-          </div>
-        `;
-        listContainer.appendChild(item);
-      });
-    }
-
-    function focusMemberNode(memberId) {
-      const node = document.getElementById(`node-${memberId}`);
-      if (!node) return;
-
-      document.querySelectorAll('.tree-card').forEach(c => c.classList.remove('focused-node-highlight'));
-      node.classList.add('focused-node-highlight');
-
-      const nodeRect = node.getBoundingClientRect();
-      const viewportRect = document.getElementById('viewport').getBoundingClientRect();
-
-      panX = (viewportRect.width / 2) - (nodeRect.left - panX + nodeRect.width / 2);
-      panY = (viewportRect.height / 2) - (nodeRect.top - panY + nodeRect.height / 2);
-      
-      applyTransform();
-
-      setTimeout(() => {
-        node.classList.remove('focused-node-highlight');
-      }, 3000);
-    }
-
-    // --- TREE RENDER ENGINE (DUAL PARENT & SIBLING BUS SUPPORT) ---
-    let renderedMemberSet = new Set();
-
-    function renderTree() {
-      renderedMemberSet.clear();
-
-      const container = document.getElementById('treeBranchRoot');
-      container.innerHTML = '';
-
-      if (!familyData || familyData.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-16 text-slate-400">
-            <i class="fa-solid fa-users-slash text-5xl mb-4 text-amber-500/40"></i>
-            <p class="text-base font-bold text-amber-200/90">কোনো বংশতালিকা তথ্য পাওয়া যায়নি</p>
-            <button onclick="prepareNewMemberForm()" class="mt-4 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider shadow">
-              প্রথম সদস্য যোগ করুন
-            </button>
-          </div>
-        `;
-        drawConnectors();
-        return;
-      }
-
-      // Root Identification Logic: Members with no parents in tree
-      const allChildrenIds = new Set(familyData.flatMap(m => m.childrenIds || []));
-      
-      // Secondary spouse checks so spouses aren't duplicated at root level
-      const spousesToSkipAsRoot = new Set();
-      familyData.forEach(m => {
-        if (m.spouseId && (!m.fatherId && !m.motherId)) {
-          const spouse = familyData.find(s => s.id === m.spouseId);
-          if (spouse && (spouse.fatherId || spouse.motherId || spouse.id < m.id)) {
-            spousesToSkipAsRoot.add(m.id);
-          }
-        }
-      });
-
-      const rootMembers = familyData.filter(m => 
-        !allChildrenIds.has(m.id) && 
-        !m.fatherId && 
-        !m.motherId && 
-        !spousesToSkipAsRoot.has(m.id)
-      );
-
-      const treeWrapper = document.createElement('div');
-      treeWrapper.style.gap = `${nodeGapSpacing}px`;
-      treeWrapper.className = currentLayout === 'vertical' 
-        ? 'flex justify-center items-start' 
-        : 'flex flex-col items-start justify-center';
-
-      rootMembers.forEach(root => {
-        if (!renderedMemberSet.has(root.id)) {
-          treeWrapper.appendChild(buildBranch(root.id));
-        }
-      });
-
-      container.appendChild(treeWrapper);
-      setTimeout(drawConnectors, 40);
-    }
-
-    function buildBranch(memberId) {
-      if (renderedMemberSet.has(memberId)) return document.createElement('div');
-      renderedMemberSet.add(memberId);
-
-      const member = familyData.find(m => m.id === memberId);
-      if (!member) return document.createElement('div');
-
-      const branch = document.createElement('div');
-      branch.className = currentLayout === 'vertical'
-        ? 'flex flex-col items-center'
-        : 'flex items-center';
-
-      // Couple Row Container
-      const coupleDiv = document.createElement('div');
-      coupleDiv.className = 'flex items-center gap-3 relative z-10';
-
-      coupleDiv.appendChild(createMemberCard(member));
-
-      let spouse = null;
-      if (member.spouseId) {
-        spouse = familyData.find(m => m.id === member.spouseId);
-        if (spouse && !renderedMemberSet.has(spouse.id)) {
-          renderedMemberSet.add(spouse.id);
-
-          // Golden Marriage Connector Badge with Ring & Heart
-          const marriageAnchor = document.createElement('div');
-          marriageAnchor.id = `spouse-union-${member.id}-${spouse.id}`;
-          marriageAnchor.className = 'w-7 h-7 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 text-slate-950 flex items-center justify-center font-bold text-xs shadow-lg border border-yellow-200 z-20 shrink-0';
-          marriageAnchor.title = 'বিবাহিত দম্পতি (Spouse Union)';
-          marriageAnchor.innerHTML = '<i class="fa-solid fa-heart text-rose-800 text-[11px]"></i>';
-
-          coupleDiv.appendChild(marriageAnchor);
-          coupleDiv.appendChild(createMemberCard(spouse));
-        }
-      }
-
-      branch.appendChild(coupleDiv);
-
-      // Collect Union Children (Children of member + spouse)
-      let children = [];
-      const primaryChildrenIds = member.childrenIds || [];
-      const spouseChildrenIds = spouse ? (spouse.childrenIds || []) : [];
-      const combinedChildrenIds = Array.from(new Set([...primaryChildrenIds, ...spouseChildrenIds]));
-
-      combinedChildrenIds.forEach(cId => {
-        const childObj = familyData.find(f => f.id === cId);
-        if (childObj && !children.some(c => c.id === cId)) {
-          children.push(childObj);
-        }
-      });
-
-      // Render Children Sub-branches
-      if (children.length > 0) {
-        const childrenContainer = document.createElement('div');
-        childrenContainer.id = `children-group-${member.id}`;
-        childrenContainer.style.gap = `${nodeGapSpacing}px`;
-        childrenContainer.className = currentLayout === 'vertical'
-          ? 'flex relative pt-12'
-          : 'flex flex-col relative pl-12';
-
-        children.forEach(child => {
-          if (!renderedMemberSet.has(child.id)) {
-            childrenContainer.appendChild(buildBranch(child.id));
-          }
-        });
-
-        branch.appendChild(childrenContainer);
-      }
-
-      return branch;
-    }
-
-    function createMemberCard(member) {
-      const card = document.createElement('div');
-      card.id = `node-${member.id}`;
-      
-      const genderBorderClass = member.gender === 'female' ? 'gender-border-female' : 'gender-border-male';
-      card.className = `tree-card w-56 rounded-2xl p-3 relative cursor-pointer group transition-all duration-200 hover:-translate-y-1 ${genderBorderClass}`;
-      
-      card.onclick = (e) => {
-        e.stopPropagation();
-        populateFormForEdit(member.id);
-      };
-
-      const avatar = member.photo 
-        ? `<img src="${member.photo}" class="w-11 h-11 ${avatarStyleClass} object-cover avatar-gold-frame shrink-0" alt="${member.name}">`
-        : `<div class="w-11 h-11 ${avatarStyleClass} bg-slate-900 avatar-gold-frame flex items-center justify-center text-amber-400 text-base font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`;
-
-      const genderBadge = member.gender === 'female'
-        ? `<span class="text-[10px] text-pink-400 font-bold bg-pink-950/80 px-1.5 py-0.5 rounded border border-pink-500/40" title="female">♀ নারী</span>`
-        : `<span class="text-[10px] text-sky-400 font-bold bg-sky-950/80 px-1.5 py-0.5 rounded border border-sky-500/40" title="male">♂ পুরুষ</span>`;
-
-      const dates = (member.birth || member.death) ? `${toBengaliNumerals(member.birth || '?')} – ${toBengaliNumerals(member.death || 'জীবিত')}` : '';
-
-      card.innerHTML = `
-        <div class="flex items-center space-x-2.5">
-          ${avatar}
-          <div class="overflow-hidden flex-1">
-            <div class="flex items-center gap-1 mb-0.5 flex-wrap">
-              ${member.badge ? `<span class="tree-badge text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded-full">${member.badge}</span>` : ''}
-              ${genderBadge}
-            </div>
-            <h4 class="font-bold text-xs truncate leading-tight">${member.name}</h4>
-            ${dates ? `<p class="tree-card-subtext text-[10px] font-semibold opacity-90 mt-0.5">${dates}</p>` : ''}
-          </div>
-        </div>
-
-        <!-- Floating Quick Action Bar -->
-        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all flex gap-1.5 bg-slate-950 border border-amber-500/50 rounded-full px-2.5 py-0.5 shadow-xl z-20 text-[10px]">
-          <button onclick="event.stopPropagation(); prepareAddChildForm('${member.id}')" class="font-bold text-amber-400 hover:underline">+সন্তান</button>
-          <span class="text-slate-700">|</span>
-          <button onclick="event.stopPropagation(); populateFormForEdit('${member.id}')" class="font-bold text-sky-400 hover:underline">সম্পাদন</button>
-          <span class="text-slate-700">|</span>
-          <button onclick="event.stopPropagation(); deleteMember('${member.id}')" class="font-bold text-rose-400 hover:underline">মুছুন</button>
-        </div>
-      `;
-
-      return card;
-    }
-
-    // Dynamic Connection Lines Rendering (With Dual Parent & Sibling Bus Lines)
-    function drawConnectors() {
-      const svg = document.getElementById('svgConnectors');
-      svg.innerHTML = '';
-
-      const containerRect = document.getElementById('treeContainer').getBoundingClientRect();
-
-      familyData.forEach(member => {
-        if (!member.childrenIds || member.childrenIds.length === 0) return;
-
-        const parentCard = document.getElementById(`node-${member.id}`);
-        if (!parentCard) return;
-
-        const pRect = parentCard.getBoundingClientRect();
-        let startX, startY;
-
-        // Check if member has a spouse present
-        let spouseCard = null;
-        if (member.spouseId) {
-          spouseCard = document.getElementById(`node-${member.spouseId}`);
-        }
-
-        if (spouseCard) {
-          const sRect = spouseCard.getBoundingClientRect();
-          if (currentLayout === 'vertical') {
-            startX = (Math.min(pRect.left, sRect.left) + Math.max(pRect.right, sRect.right)) / 2 - containerRect.left;
-            startY = Math.max(pRect.bottom, sRect.bottom) - containerRect.top;
-          } else {
-            startX = Math.max(pRect.right, sRect.right) - containerRect.left;
-            startY = (Math.min(pRect.top, sRect.top) + Math.max(pRect.bottom, sRect.bottom)) / 2 - containerRect.top;
-          }
+        if (e.ctrlKey) {
+          // Pinch Zoom
+          const zoomFactor = e.deltaY < 0 ? 1.05 : 0.95;
+          setZoom(currentScale * zoomFactor, e.clientX, e.clientY);
         } else {
-          if (currentLayout === 'vertical') {
-            startX = pRect.left + pRect.width / 2 - containerRect.left;
-            startY = pRect.bottom - containerRect.top;
-          } else {
-            startX = pRect.right - containerRect.left;
-            startY = pRect.top + pRect.height / 2 - containerRect.top;
-          }
+          // Two-finger Drag Pan
+          panX -= e.deltaX;
+          panY -= e.deltaY;
+          updateTransform();
         }
-
-        // Draw connections to each child
-        member.childrenIds.forEach(childId => {
-          const childCard = document.getElementById(`node-${childId}`);
-          if (!childCard) return;
-
-          const cRect = childCard.getBoundingClientRect();
-          let endX, endY;
-
-          if (currentLayout === 'vertical') {
-            endX = cRect.left + cRect.width / 2 - containerRect.left;
-            endY = cRect.top - containerRect.top;
-          } else {
-            endX = cRect.left - containerRect.left;
-            endY = cRect.top + cRect.height / 2 - containerRect.top;
-          }
-
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('class', 'tree-line');
-
-          if (currentLayout === 'vertical') {
-            const midY = startY + (endY - startY) / 2;
-            path.setAttribute('d', `M ${startX} ${startY} V ${midY} H ${endX} V ${endY}`);
-          } else {
-            const midX = startX + (endX - startX) / 2;
-            path.setAttribute('d', `M ${startX} ${startY} H ${midX} V ${endY} H ${endX}`);
-          }
-
-          svg.appendChild(path);
-        });
-      });
+      }, { passive: false });
     }
 
-    // --- FORM ACTIONS ---
-    function populateFormSelectors() {
-      const fatherSelect = document.getElementById('fFatherId');
-      const motherSelect = document.getElementById('fMotherId');
-      const spouseSelect = document.getElementById('fSpouseId');
+    function setZoom(newScale, focalX, focalY) {
+      newScale = Math.min(Math.max(0.2, newScale), 2.5);
 
-      fatherSelect.innerHTML = '<option value="">-- পিতা নির্বাচন করুন --</option>';
-      motherSelect.innerHTML = '<option value="">-- মাতা নির্বাচন করুন --</option>';
-      spouseSelect.innerHTML = '<option value="">-- স্বামী/স্ত্রী নির্বাচন করুন --</option>';
+      if (focalX !== undefined && focalY !== undefined) {
+        const rect = viewport.getBoundingClientRect();
+        const mouseX = focalX - rect.left;
+        const mouseY = focalY - rect.top;
 
-      familyData.forEach(m => {
-        const genderLabel = m.gender === 'female' ? '♀' : '♂';
-        const optionText = `${m.name} (${m.badge || 'সদস্য'}) ${genderLabel}`;
-        
-        if (m.gender === 'male') {
-          fatherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
-        } else {
-          motherSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
-        }
-        spouseSelect.innerHTML += `<option value="${m.id}">${optionText}</option>`;
-      });
-    }
-
-    function prepareNewMemberForm() {
-      clearFormFill();
-      switchSidebarTab('form');
-      document.getElementById('formHeadingTitle').innerText = 'নতুন সদস্য যোগ করুন';
-    }
-
-    function prepareAddChildForm(parentId) {
-      clearFormFill();
-      const parent = familyData.find(m => m.id === parentId);
-      if (parent) {
-        if (parent.gender === 'female') {
-          document.getElementById('fMotherId').value = parentId;
-          if (parent.spouseId) document.getElementById('fFatherId').value = parent.spouseId;
-        } else {
-          document.getElementById('fFatherId').value = parentId;
-          if (parent.spouseId) document.getElementById('fMotherId').value = parent.spouseId;
-        }
-      }
-      switchSidebarTab('form');
-      document.getElementById('formHeadingTitle').innerText = 'সন্তান যোগ করুন';
-    }
-
-    function populateFormForEdit(id) {
-      const member = familyData.find(m => m.id === id);
-      if (!member) return;
-
-      document.getElementById('formMemberId').value = member.id;
-      document.getElementById('fName').value = member.name || '';
-      document.getElementById('fBadge').value = member.badge || '';
-      document.getElementById('fGender').value = member.gender || 'male';
-      document.getElementById('fBirth').value = member.birth || '';
-      document.getElementById('fDeath').value = member.death || '';
-      document.getElementById('fPhotoUrl').value = member.photo || '';
-      document.getElementById('fBio').value = member.bio || '';
-      document.getElementById('fFatherId').value = member.fatherId || '';
-      document.getElementById('fMotherId').value = member.motherId || '';
-      document.getElementById('fSpouseId').value = member.spouseId || '';
-
-      document.getElementById('formHeadingTitle').innerText = 'তথ্য সম্পাদনা করুন';
-      switchSidebarTab('form');
-    }
-
-    function handleFormFillSubmit(e) {
-      e.preventDefault();
-
-      const memberId = document.getElementById('formMemberId').value;
-      const fatherId = document.getElementById('fFatherId').value || null;
-      const motherId = document.getElementById('fMotherId').value || null;
-      const spouseId = document.getElementById('fSpouseId').value || null;
-
-      const memberObj = {
-        id: memberId || Date.now().toString(),
-        name: document.getElementById('fName').value,
-        badge: document.getElementById('fBadge').value,
-        gender: document.getElementById('fGender').value,
-        birth: document.getElementById('fBirth').value,
-        death: document.getElementById('fDeath').value,
-        photo: document.getElementById('fPhotoUrl').value,
-        bio: document.getElementById('fBio').value,
-        fatherId: fatherId,
-        motherId: motherId,
-        spouseId: spouseId,
-        childrenIds: []
-      };
-
-      if (memberId) {
-        const index = familyData.findIndex(m => m.id === memberId);
-        if (index !== -1) {
-          memberObj.childrenIds = familyData[index].childrenIds || [];
-          familyData[index] = memberObj;
-        }
-      } else {
-        familyData.push(memberObj);
+        panX = mouseX - (mouseX - panX) * (newScale / currentScale);
+        panY = mouseY - (mouseY - panY) * (newScale / currentScale);
       }
 
-      // Sync Relationships
-      if (fatherId) {
-        const father = familyData.find(m => m.id === fatherId);
-        if (father) {
-          father.childrenIds = father.childrenIds || [];
-          if (!father.childrenIds.includes(memberObj.id)) father.childrenIds.push(memberObj.id);
-        }
-      }
-
-      if (motherId) {
-        const mother = familyData.find(m => m.id === motherId);
-        if (mother) {
-          mother.childrenIds = mother.childrenIds || [];
-          if (!mother.childrenIds.includes(memberObj.id)) mother.childrenIds.push(memberObj.id);
-        }
-      }
-
-      if (spouseId) {
-        const spouse = familyData.find(m => m.id === spouseId);
-        if (spouse) spouse.spouseId = memberObj.id;
-      }
-
-      saveDataToStorage();
-      clearFormFill();
-      switchSidebarTab('members');
+      currentScale = newScale;
+      document.getElementById('zoomSlider').value = currentScale;
+      document.getElementById('zoomBadge').textContent = `${Math.round(currentScale * 100)}%`;
+      updateTransform();
     }
 
-    function clearFormFill() {
-      document.getElementById('treeMemberForm').reset();
-      document.getElementById('formMemberId').value = '';
+    function zoomDelta(delta) {
+      setZoom(currentScale + delta);
     }
 
-    function deleteMember(id) {
-      if (confirm("আপনি কি নিশ্চিত যে এই সদস্যকে মুছে ফেলতে চান?")) {
-        familyData = familyData.filter(m => m.id !== id);
-        familyData.forEach(m => {
-          if (m.spouseId === id) m.spouseId = null;
-          if (m.fatherId === id) m.fatherId = null;
-          if (m.motherId === id) m.motherId = null;
-          if (m.childrenIds) m.childrenIds = m.childrenIds.filter(cId => cId !== id);
-        });
-        saveDataToStorage();
-      }
+    function resetView() {
+      currentScale = 0.9;
+      panX = 120;
+      panY = 80;
+      setZoom(currentScale);
     }
 
-    function handleFileUpload(event, targetInputId) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById(targetInputId).value = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
+    function updateTransform() {
+      treeContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
     }
 
-    // --- LAYOUT & DESIGN CONTROLS ---
-    function setLayoutDirection(direction) {
-      currentLayout = direction;
-      
-      const vBtn = document.getElementById('layoutBtn-vertical');
-      const hBtn = document.getElementById('layoutBtn-horizontal');
-
-      if (direction === 'vertical') {
-        vBtn.className = 'p-2.5 bg-slate-900 border border-amber-400 rounded-xl text-center text-xs font-bold text-amber-300 transition';
-        hBtn.className = 'p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition';
-      } else {
-        hBtn.className = 'p-2.5 bg-slate-900 border border-amber-400 rounded-xl text-center text-xs font-bold text-amber-300 transition';
-        vBtn.className = 'p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition';
-      }
-
-      renderTree();
-    }
-
-    function updateNodeSpacing(spacingVal) {
-      nodeGapSpacing = parseInt(spacingVal, 10);
-      const badge = document.getElementById('spacingValueBadge');
-      if (nodeGapSpacing < 35) badge.innerText = 'সংকুচিত';
-      else if (nodeGapSpacing > 70) badge.innerText = 'প্রশস্ত';
-      else badge.innerText = 'মাঝারি';
-
-      renderTree();
-    }
-
-    function setTheme(themeKey) {
-      const viewport = document.getElementById('viewport');
-      viewport.className = `flex-1 relative overflow-hidden canvas-theme-container theme-${themeKey} flex items-center justify-center canvas-grab`;
-      setTimeout(drawConnectors, 30);
-    }
-
-    function updateAvatarStyle(styleClass) {
-      avatarStyleClass = styleClass;
-      renderTree();
-    }
-
-    function updateBannerTitle(val) {
-      document.getElementById('displayBannerTitle').innerText = val || 'বংশতালিকা';
-    }
-
-    function updateBannerSubtitle(val) {
-      document.getElementById('displayBannerSub').innerText = val || '';
-    }
-
-    // --- JSON BACKUP EXPORT & IMPORT ---
-    function exportJSONData() {
-      const exportObject = {
-        appName: "FamilyTree Royal Gold Studio",
-        version: "3.5",
-        exportDate: new Date().toISOString(),
-        bannerTitle: document.getElementById('familyTitleInput').value,
-        bannerSubtitle: document.getElementById('familySubTitleInput').value,
-        members: familyData
-      };
-
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
+    /* JSON Backup Engine */
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(familyData, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `FamilyTree_Gold_Data.json`);
+      downloadAnchor.setAttribute("download", `FamilyTree_Backup_${Date.now()}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
     }
 
-    function importJSONData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    function importJSON() {
+      document.getElementById('jsonFileInput').click();
+    }
 
+    function handleJSONFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function(evt) {
         try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed.members && Array.isArray(parsed.members)) {
-            familyData = parsed.members;
-            if (parsed.bannerTitle) {
-              document.getElementById('familyTitleInput').value = parsed.bannerTitle;
-              updateBannerTitle(parsed.bannerTitle);
-            }
-            if (parsed.bannerSubtitle) {
-              document.getElementById('familySubTitleInput').value = parsed.bannerSubtitle;
-              updateBannerSubtitle(parsed.bannerSubtitle);
-            }
-            saveDataToStorage();
-            alert("বংশতালিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
-          } else if (Array.isArray(parsed)) {
-            familyData = parsed;
-            saveDataToStorage();
-            alert("বংশতালিকা ডাটা সফলভাবে আপলোড করা হয়েছে!");
-          } else {
-            alert("ত্রুটি: ফাইলের ফরম্যাট সঠিক নয়।");
+          const imported = JSON.parse(evt.target.result);
+          if (Array.isArray(imported)) {
+            familyData = imported;
+            saveStorage();
+            renderAll();
+            alert('বংশতালিকা ডাটা সফলভাবে ব্যাকআপ থেকে লোড হয়েছে!');
           }
-        } catch(err) {
-          alert("ডাটা ফাইল পড়তে সমস্যা হয়েছে।");
+        } catch (err) {
+          alert('ভুল ফাইল ফরম্যাট!');
         }
       };
       reader.readAsText(file);
     }
 
-    // --- EXPORT MODAL & CAPTURE ENGINE ---
+    /* Social Media & Print Export Modal Engine */
     function openExportModal() {
-      document.getElementById('exportModal').classList.remove('hidden');
+      document.getElementById('exportModal').classList.add('active');
     }
 
     function closeExportModal() {
-      document.getElementById('exportModal').classList.add('hidden');
+      document.getElementById('exportModal').classList.remove('active');
     }
 
-    function setExportFrame(presetKey) {
-      selectedExportPreset = presetKey;
-      document.querySelectorAll('.export-preset-btn').forEach(btn => {
-        btn.classList.remove('border-amber-500/80');
-        btn.classList.add('border-slate-800');
-      });
-      document.getElementById(`preset-${presetKey}`).classList.add('border-amber-500/80');
+    function selectExportPreset(preset) {
+      selectedExportPreset = preset;
+      document.querySelectorAll('.export-option').forEach(el => el.classList.remove('selected'));
+      document.getElementById(`opt-${preset}`).classList.add('selected');
     }
 
-    function executeExport(format) {
+    function executeExport() {
       closeExportModal();
 
-      const treeContainer = document.getElementById('treeContainer');
-      const viewport = document.getElementById('viewport');
+      // Temporarily reset transform for crystal-clear render
+      const origTransform = treeContainer.style.transform;
+      treeContainer.style.transform = 'translate(0px, 0px) scale(1)';
 
-      const prevTransform = document.getElementById('canvasViewport').style.transform;
-      document.getElementById('canvasViewport').style.transform = 'scale(1) translate(0,0)';
+      html2canvas(treeContainer, {
+        backgroundColor: '#0A0D14',
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        treeContainer.style.transform = origTransform;
 
-      const frameWrapper = document.createElement('div');
-      frameWrapper.className = `canvas-theme-container ${viewport.className} flex items-center justify-center p-12 aspect-${selectedExportPreset}`;
-      frameWrapper.style.position = 'fixed';
-      frameWrapper.style.left = '-9999px';
-      frameWrapper.style.top = '-9999px';
-
-      const cloneContainer = treeContainer.cloneNode(true);
-      frameWrapper.appendChild(cloneContainer);
-      document.body.appendChild(frameWrapper);
-
-      setTimeout(() => {
-        if (format === 'pdf') {
-          html2canvas(cloneContainer, { scale: 2, useCORS: true }).then(canvas => {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-              orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-              unit: 'px',
-              format: [canvas.width, canvas.height]
-            });
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save(`FamilyTree-Print.pdf`);
-            cleanup();
-          });
+        if (selectedExportPreset === 'pdf') {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('l', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+          pdf.addImage(imgData, 'JPEG', 10, 10, 277, 190);
+          pdf.save(`FamilyTree_Print_${Date.now()}.pdf`);
         } else {
-          html2canvas(frameWrapper, { scale: 2, useCORS: true }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `FamilyTree-${selectedExportPreset}.${format}`;
-            link.href = canvas.toDataURL(`image/${format}`, 0.95);
-            link.click();
-            cleanup();
-          });
+          const link = document.createElement('a');
+          link.download = `FamilyTree_${selectedExportPreset}_${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
         }
-      }, 100);
-
-      function cleanup() {
-        document.body.removeChild(frameWrapper);
-        document.getElementById('canvasViewport').style.transform = prevTransform;
-      }
+      });
     }
   </script>
 </body>
